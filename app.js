@@ -13,7 +13,7 @@ const app = express();
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 var enemies = [];
-var players = {};
+var players = [];
 var particles = [];
 // setup mongo connection
 const uri = process.env.MONGO_CONNECTION_URL;
@@ -66,33 +66,32 @@ http.listen(process.env.PORT || 3000, () => {
   console.log(`Server started on port ${process.env.PORT || 3000}`);
 });
 io.on('connection', function(socket){
-  console.log('a user connected, id: ' + socket.id);
+  console.log('a user connected');
   socket.on('disconnect', function(){
-    console.log('user disconnected, id: ' + socket.id);
+    console.log('user disconnected');
   });
   socket.on('updatePos', function(player){
     //console.log('posX' + player.x + ", posY" + player.y);
   });
   socket.on("addPlayer", function (player){
-    newPlayer = new obj(player.width, player.height, player.color, player.x, player.y, player.type, player.id);
-    players[player.id] = newPlayer;
-    //console.log("serverside player length: " + Object.keys(players).length + " Added ID: " + player.id);
+    player = new obj(player.width, player.height, player.color, player.x, player.y, player.type);
+    players.push(player);
+    console.log("serverside player length: " + players.length);
   })
   socket.on("getPlayers", function(){
-     //console.log(Object.keys(players).length);
-    socket.emit("initPlayers", players);
+    socket.emit("recievePlayers", players);
   });
-  socket.on("updateLoc", function(id,x,y){
-    //console.log("id: " + id + ", size: " + Object.keys(players).length);
-    players[id].x = x;
-    players[id].y = y;
-   // console.log("servX: " + players[id].x + ", servY: " + players[id].y);
+  socket.on("updateLoc", function(index,x,y){
+    console.log("index: " + index + ", size: " + players.length);
+    players[index].x = x;
+    players[index].y = y;
+    //console.log("servX: " + players[index].x + ", servY: " + players[index].y);
     socket.emit("recievePlayers", players);
   });
 
 });
 
-function obj(width, height, color, x, y, type, id) {
+function obj(width, height, color, x, y, type) {
   this.type = type;
   this.color = color;
   this.width = width;
@@ -101,5 +100,4 @@ function obj(width, height, color, x, y, type, id) {
   this.speedY = 0;
   this.x = x;
   this.y = y;
-  this.id = id;
 }

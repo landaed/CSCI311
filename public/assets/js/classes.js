@@ -29,7 +29,7 @@ Vector.prototype.normalize = function() {
 };
 
 
-function component(width, height, color, x, y, type, id) {
+function component(width, height, color, x, y, type) {
     this.type = type;
     this.color = color;
     if (type == "image") {
@@ -43,7 +43,6 @@ function component(width, height, color, x, y, type, id) {
     this.speedY = 0;
     this.x = x;
     this.y = y;
-    this.id = id;
     this.update = function() {
         ctx = myGameArea.context;
         if (type == "image") {
