@@ -1,43 +1,65 @@
 var myGamePiece;
+var wall;
 var myBackground;
 var speedMultiplyer = 3;
 var bullets = [];
+var socket = io();
+var players =[];
+var initPlayers = false;
+
+//run once at the beginning of the game
 function startGame() {
-    myGamePiece = new component(60, 50, "./assets/js/Character.png", 200, 100, "image");
+    // creating a player game object
+    var player = new component(60, 50, "./assets/js/Character.png", 200, 100, "image");
+
+    // passing the player object to the server
+    socket.emit("addPlayer", player);
+
+    // request players list from the server
+    socket.emit("getPlayers");
+
+    // set list of players that the server has to the local list of players
+    socket.on("recievePlayers", function(p){
+      //iterate through each player in the server's list
+      p.forEach(function(pServ) {
+        //this is a listener socket so it is always accessible despite being in the start function.
+        //to make our initialization only occur on start, we use a boolean (initPlayers).
+        if(!initPlayers){
+          initPlayers = true;
+
+          //create a new component based on what we recieved from the server.
+          locP = new component(pServ.width, pServ.height, pServ.color, pServ.x, pServ.y, pServ.type)
+
+          //store that component in a local list of players
+          players.push(locP);
+
+          //update will draw the component to the screen.
+          locP.update();
+
+          //here I am trying to get the index on the list that this player is located inspect
+          //this is so we can move just this clients player Character, not all the players in the server.
+          myGamePiece = players.length-1;
+        //  console.log(myGamePiece);
+        }
+      });
+    });
+
+    //create a background
     myBackground = new component(800, 800, "./assets/js/ground.jpg", 0, 0, "image");
+
+    //create an obstacle
+    wall = new component(30, 30, "blue", 300, 300, "color");
+    wall.worldPos.x = 300;
+    wall.worldPos.y = 300;
     myGameArea.start();
 
 }
+//used to track this clients player characters global position (not sure if needed,
+//still thinking about how to handle movement accross server)
+var localPos = new Vector(200,100);
 
-var Vector = function(x, y) {
-    this.x = x;
-    this.y = y;
-};
-Vector.prototype.add = function(v) {
-  this.y = this.y + v.y;
-  this.x = this.x + v.x;
-};
-Vector.prototype.sub = function(v) {
-  this.y = this.y - v.y;
-  this.x = this.x - v.x;
-};
-Vector.prototype.div = function(n) {
-   this.x = this.x / n;
-   this.y = this.y / n;
-}
-Vector.prototype.mult = function(n) {
-   this.x = this.x * n;
-   this.y = this.y * n;
-}
-Vector.prototype.mag = function() {
-    return Math.sqrt(this.x*this.x + this.y*this.y);
-};
-Vector.prototype.normalize = function() {
-  var m = this.mag();
-  if (m > 0) {
-    this.div(m);
-  }
-};
+//this is the canvas essentially.
+//we probably should make this larger and responsive
 var myGameArea = {
     canvas : document.createElement("canvas"),
     start : function() {
@@ -59,54 +81,83 @@ var myGameArea = {
     }
 }
 
-function component(width, height, color, x, y, type) {
-    this.type = type;
-    if (type == "image") {
-        this.image = new Image();
-        this.image.src = color;
-    }
-    this.width = width;
-    this.height = height;
-    this.speedX = 0;
-    this.speedY = 0;
-    this.x = x;
-    this.y = y;
-    this.update = function() {
-        ctx = myGameArea.context;
-        if (type == "image") {
-            ctx.drawImage(this.image,
-                this.x,
-                this.y,
-                this.width, this.height);
-        } else {
-            ctx.fillStyle = color;
-            ctx.fillRect(this.x, this.y, this.width, this.height);
-        }
-    }
-    this.newPos = function() {
-        this.x += this.speedX;
-        this.y += this.speedY;
-    }
-}
-
+//runs every frame
 function updateGameArea() {
+  //get new player list every frame
+  //(likely super inefficient to get a list of object each frame, perhaps just location values is better?)
+  socket.on("recievePlayers", function(p){
+    //empty our local array of players
+    players = [];
+    //refill the array from the servers array
+    //(possibly is causing my issues with binding the client to a single player)
+    var i = 0;
+    p.forEach(function(pServ) {
+
+      if(i == myGamePiece){
+        locP = new component(pServ.width, pServ.height, pServ.color, 200, 100, pServ.type)
+      }
+      else{
+        locP = new component(pServ.width, pServ.height, pServ.color, pServ.x, pServ.y, pServ.type)
+      }
+      players.push(locP);
+      i++;
+    });
+  });
+  //clear the screen
   myGameArea.clear();
+  //reset movement speed to 0
   myBackground.speedX = 0;
   myBackground.speedY = 0;
-  if (myGameArea.keys && myGameArea.keys[37]) {myBackground.speedX = 1 * speedMultiplyer; }
-  if (myGameArea.keys && myGameArea.keys[39]) {myBackground.speedX = -1 * speedMultiplyer; }
-  if (myGameArea.keys && myGameArea.keys[38]) {myBackground.speedY = 1 * speedMultiplyer; }
-  if (myGameArea.keys && myGameArea.keys[40]) {myBackground.speedY = -1 * speedMultiplyer; }
+  wall.speedX = 0;
+  wall.speedY = 0;
+
+  //user input
+  if (myGameArea.keys && myGameArea.keys[37]) {
+    myBackground.speedX = 1 * speedMultiplyer;
+    wall.speedX = 1 * speedMultiplyer;
+    localPos.x += 1 * speedMultiplyer;
+    socket.emit("updateLoc", myGamePiece, localPos.x, localPos.y);
+  }
+  if (myGameArea.keys && myGameArea.keys[39]) {
+    myBackground.speedX = -1 * speedMultiplyer;
+    wall.speedX = -1 * speedMultiplyer;
+    localPos.x += -1 * speedMultiplyer;
+    socket.emit("updateLoc", myGamePiece, localPos.x, localPos.y);
+  }
+  if (myGameArea.keys && myGameArea.keys[38]) {
+    myBackground.speedY = 1 * speedMultiplyer;
+    wall.speedY = 1 * speedMultiplyer;
+    localPos.y += 1 * speedMultiplyer;
+    socket.emit("updateLoc", myGamePiece, localPos.x, localPos.y);
+  }
+  if (myGameArea.keys && myGameArea.keys[40]) {
+    myBackground.speedY = -1 * speedMultiplyer;
+    wall.speedY = -1 * speedMultiplyer;
+    localPos.y += -1 * speedMultiplyer;
+    socket.emit("updateLoc", myGamePiece, localPos.x, localPos.y);
+  }
+  //console.log("myGamePiece: " + myGamePiece +", localX: " + localPos.x + ", localY: " + localPos.y);
+
+
+  //move background image
   myBackground.newPos();
+  //redraw the background image since it has moved
   myBackground.update();
+  //same process for this wall
+  wall.newPos();
+  wall.update();
+
+  //re draw all the players and bullets
+  players.forEach(function(p) {
+    p.update();
+  });
   bullets.forEach(function(bullet) {
     bullet.update();
     bullet.newPos();
-    //bullet.speedY= myBackground.speedY;
   });
-  myGamePiece.update();
 
 }
+//handle clicking (for instantiating bullets)
 myGameArea.canvas.addEventListener('click', function() {
   var sX = event.clientX;
   var sY = event.clientY;
