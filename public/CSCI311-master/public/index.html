@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<link href="assets/css/main.css" rel="stylesheet">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+</head>
+<body>
+<div>
+  <h1>CSCI311</h1>
+  <!-- Trigger/Open The Modal -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <a class="navbar-brand" href="#"> <img src="./assets/js/Character.png" alt="Smiley face" height="42" width="42"> </a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNavDropdown">
+    <ul class="navbar-nav">
+      <li class="nav-item active">
+        <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/changeLog">ChangeLog</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/about_us">About Us</a>
+      </li>
+    </ul>
+  </div>
+  <button id="myBtn" class="logBtn">Login/Signup</button>
+  </nav>
+  <div class="row">
+  <div class="column">
+    <img src="./assets/js/genie.gif" style="width:230px;height:220px;object-fit: cover;" onclick="openModal();currentText(0);" class="hover-shadow cursor">
+    <h2>Fight monsters</h2>
+  </div>
+  <div class="column">
+    <img src="./assets/js/knight.gif" style="width:230px;height:220px;object-fit: cover;" onclick="openModal();currentText(1);" class="hover-shadow cursor">
+    <h2>Learn new abilities</h2>
+  </div>
+  <div class="column">
+    <img src="./assets/js/smith.gif" style="width:230px;height:220px;object-fit: cover;" onclick="openModal();currentText(2);" class="hover-shadow cursor">
+    <h2>Get new weapons</h2>
+  </div>
+</div>
+
+<div id="myInfModal" class="modal">
+  <span class="close cursor" onclick="closeModal()">&times;</span>
+  <div class="modal-content">
+    <p>sfdjksnsljdkfnslfnksdfnkjsnfksd</p>
+  </div>
+</div>
+</div>
+
+<script>
+function openModal() {
+  document.getElementById("myInfModal").style.display = "block";
+}
+let txt = document.getElementById("modalText");
+function currentText(n) {
+  if(n == 0){
+    txt = "blah blah blah"
+  }
+  if(n == 2){
+    txt = "flw;mklwfmlwf"
+  }
+  if(n == 3){
+    txt = "test test test"
+  }
+}
+
+function closeModal() {
+  document.getElementById("myInfModal").style.display = "none";
+}
+</script>
+
+
+
+<!-- The Modal -->
+<div id="myModal" class="modal">
+
+  <!-- Modal content -->
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <form class="form-signin">
+
+      <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
+      <label for="email" class="sr-only">Email address</label>
+      <input type="email" id="email" class="form-control" placeholder="Email address" required autofocus>
+      <label for="password" class="sr-only">Password</label>
+      <input type="password" id="password" class="form-control" placeholder="Password" required>
+      <a class="btn btn-lg btn-primary btn-block" onClick="signIn()">Sign in</a>
+      <a href="/signup.html">Don't have an account? Sign up here.</a>
+    </form>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      var socket = io.connect('http://localhost');
+      function signIn() {
+        var data = {
+          email: document.forms[0].elements[0].value,
+          password: document.forms[0].elements[1].value
+        };
+        $.ajax({
+          type: 'POST',
+          url: '/login',
+          data,
+          success: function (data) {
+            window.location.replace('/game.html');
+          },
+          error: function (xhr) {
+            window.alert(JSON.stringify(xhr));
+            window.location.replace('/index.html');
+          }
+        });
+      }
+    </script>
+  </div>
+
+</div>
+
+<script>
+// Get the modal
+var modal = document.getElementById("myModal");
+
+// Get the button that opens the modal
+var btn = document.getElementById("myBtn");
+
+// Get the <span> element that closes the modal
+var span = document.getElementsByClassName("close")[0];
+
+// When the user clicks the button, open the modal
+btn.onclick = function() {
+  modal.style.display = "block";
+}
+
+// When the user clicks on <span> (x), close the modal
+span.onclick = function() {
+  modal.style.display = "none";
+}
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
+</script>
+
+</body>
+</html>

@@ -15,7 +15,7 @@ body {
   justify-content: center;
   padding-top: 40px;
   padding-bottom: 40px;
- background-color: grey;
+  background-color: #f5f5f5;
 }
 
 .form-signin {
@@ -94,7 +94,7 @@ h1{
   position: absolute;
   width: 100%;
   left:0;
-  top:0%
+  top:30%
 }
 * {
   box-sizing: border-box;
