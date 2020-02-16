@@ -45,6 +45,10 @@ app.get('/', function (req, res) {
  res.sendFile(__dirname + '/index.html');
 });
 
+app.get('/changeLog', function (req, res) {
+ res.sendFile(__dirname + '/public/changelog.html');
+});
+
 // main routes
 app.use('/', routes);
 app.use('/', passport.authenticate('jwt', { session : false }), secureRoutes);
