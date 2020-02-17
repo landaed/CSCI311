@@ -104,6 +104,9 @@ h1{
   margin-top: 200px;
   padding: 80px;
 }
+.contentOffset{
+  margin-top: 500px;
+}
 
 .row:after {
   content: "";
