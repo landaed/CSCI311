@@ -12,18 +12,44 @@
 </head>
 
 <body class="text-center">
+   <div class="p-2 mb-2 bg-dark text-white border border-info">
+     <!-- Trigger/Open The Modal -->
+     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+     <a class="navbar-brand" href="#"> <img src="./assets/js/Character.png" alt="Smiley face" height="42" width="42"> </a>
+     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+       <span class="navbar-toggler-icon"></span>
+     </button>
+     <div class="collapse navbar-collapse" id="navbarNavDropdown">
+       <ul class="navbar-nav">
+         <li class="nav-item">
+           <a class="nav-link" href="index.html">Home <span class="sr-only">(current)</span></a>
+         </li>
+         <li class="nav-item">
+           <a class="nav-link" href="changeLog.html">ChangeLog</a>
+         </li>
+         <li class="nav-item">
+           <a class="nav-link" href="about_us.html">About Us</a>
+         </li>
+         <h1 class="page-header">Project Title</h1>
+       </ul>
+     </div>
+     </nav>
+
   <form class="form-signin">
-    <h1 class="h3 mb-3 font-weight-normal">Sign Up</h1>
+    <h2 class="header-3">Sign-Up</h2>
     <label for="email" class="sr-only">Email address</label>
     <input type="email" id="email" class="form-control" placeholder="Email address" required autofocus>
     <label for="password" class="sr-only">Password</label>
     <input type="password" id="password" class="form-control" placeholder="Password" required>
     <label for="name" class="sr-only">Name</label>
     <input type="text" id="name" class="form-control" placeholder="Name" required>
-    <a class="btn btn-lg btn-primary btn-block" onClick="signUp()">Sign up</a>
-    <a href="/index.html">Already have an account? Login here.</a>
+    <!--<a class="btn btn-lg btn-primary btn-block" onClick="signUp()">Sign up</a> -->
+    <a class="btn btn-lg btn-primary btn-block" href="index.html">Sign up</a>
+    <a href="index.html">Already have an account? Login here.</a>
   </form>
-  <script>
+</div>
+ <!--
+ <script>
     function signUp() {
       var data = {
         email: document.forms[0].elements[0].value,
@@ -44,7 +70,9 @@
         }
       });
     }
-  </script>
+</script>
+-->
+    <script src="assets/js/indexScript.js"></script>
 </body>
 
 </html>

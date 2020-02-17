@@ -1,21 +1,57 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<style>
-canvas {
-    border:1px solid #d3d3d3;
-    background-color: #f1f1f1;
-}
-</style>
+<meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<link href="assets/css/game.css" rel="stylesheet">
+<link href="assets/css/main.css" rel="stylesheet">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<title>Amazing Game</title>
 </head>
-<body>
+<body class="text-center" onload="startGame()">
+   <div class="bg-dark text-white">
+      <!-- Trigger/Open The Modal -->
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+         <a class="navbar-brand" href="#"> <img src="./assets/js/Character.png" alt="Smiley face" height="42" width="42"> </a>
+         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+         </button>
+         <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <ul class="navbar-nav">
+               <li class="nav-item">
+                  <a class="nav-link" href="index.html">Home <span class="sr-only">(current)</span></a>
+               </li>
+               <li class="nav-item">
+                  <a class="nav-link" href="changeLog.html">ChangeLog</a>
+               </li>
+               <li class="nav-item">
+                  <a class="nav-link" href="about_us.html">About Us</a>
+               </li>
+               <h1 class="page-header">Project Title</h1>
+            </ul>
+         </div>
+         <button id="myBtn" class="btn btn-primary"><a class="text-white" href="index.html">Logout</a></button>
+      </nav>
+   </div>
+<div class="d-flex flex-column">
+   <main class="p-1" role="main">
+      <canvas id="game"> </canvas>
+   </main>
 
-<script src="http://localhost:3000/socket.io/socket.io.js"></script>
-<script type="text/javascript" src="assets/js/classes.js"></script>
-<script type="text/javascript" src="assets/js/game.js">
-</script>
-<p>Make sure this window has focus, then use the arrow keys on you keyboard to move the red square.</p>
-<p>When pressing both the left and the down arrow, the red square will move both down and to the left.</p>
+   <h2>Controls</h2>
+   <p>
+      Arrow Keys to move
+   </p>
+   <p>
+      Left Click to shoot
+   </p>
+</div>
+
+<script src="assets/js/indexScript.js"></script>
+
+<script type="text/javascript" src="assets/js/gameProto.js"></script>
+
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 </body>
 </html>
