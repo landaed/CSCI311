@@ -70,9 +70,11 @@ http.listen(process.env.PORT || 3000, () => {
   console.log(`Server started on port ${process.env.PORT || 3000}`);
 });
 io.on('connection', function(socket){
+
   console.log('a user connected, id: ' + socket.id);
   socket.on('disconnect', function(){
     console.log('user disconnected, id: ' + socket.id);
+      delete players[socket.id];
   });
   socket.on('updatePos', function(player){
     //console.log('posX' + player.x + ", posY" + player.y);
