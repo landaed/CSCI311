@@ -80,11 +80,11 @@ io.on('connection', function(socket){
   socket.on("addPlayer", function (player){
     newPlayer = new obj(player.width, player.height, player.color, player.x, player.y, player.type, player.id);
     players[player.id] = newPlayer;
-    //console.log("serverside player length: " + Object.keys(players).length + " Added ID: " + player.id);
+    console.log("serverside player length: " + Object.keys(players).length + " Added ID: " + player.id);
   })
   socket.on("getPlayers", function(){
      //console.log(Object.keys(players).length);
-    socket.emit("initPlayers", players);
+  //  socket.emit("initPlayers", players);
   });
   socket.on("updateLoc", function(id,x,y){
     //console.log("id: " + id + ", size: " + Object.keys(players).length);
