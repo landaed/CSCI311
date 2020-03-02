@@ -15,6 +15,7 @@ var io = require('socket.io')(http);
 var enemies = [];
 var players = {};
 var particles = [];
+var obstacles = {};
 // setup mongo connection
 const uri = process.env.MONGO_CONNECTION_URL;
 mongoose.connect(uri, { useNewUrlParser : true, useCreateIndex: true, useUnifiedTopology: true});
