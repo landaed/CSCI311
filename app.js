@@ -93,7 +93,7 @@ io.on('connection', function(socket){
     players[id].x = x;
     players[id].y = y;
    // console.log("servX: " + players[id].x + ", servY: " + players[id].y);
-    socket.emit("recievePlayers", players);
+    io.sockets.emit("recievePlayers", players);
   });
 
 });

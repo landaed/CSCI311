@@ -54,6 +54,7 @@ function startGameOnConnect() {
     wall = new component(30, 30, "blue", 300, 300, "color", id);
     wall.worldPos.x = 300;
     wall.worldPos.y = 300;
+    socket.emit("updateLoc", id, localPos.x, localPos.y);
     myGameArea.start();
 
 }
@@ -123,27 +124,34 @@ function updateGameArea() {
     wall.speedX = 1 * speedMultiplyer;
     localPos.x += -1 * speedMultiplyer;
     xOffset += 1 * speedMultiplyer;
+    // possible optimization: update locations way less frequently and tween sprites into new positions
+    socket.emit("updateLoc", id, localPos.x, localPos.y);
   }
   if (myGameArea.keys && myGameArea.keys[39]) {
     myBackground.speedX = -1 * speedMultiplyer;
     wall.speedX = -1 * speedMultiplyer;
     localPos.x += 1 * speedMultiplyer;
     xOffset -= 1 * speedMultiplyer
+    // possible optimization: update locations way less frequently and tween sprites into new positions
+    socket.emit("updateLoc", id, localPos.x, localPos.y);
   }
   if (myGameArea.keys && myGameArea.keys[38]) {
     myBackground.speedY = 1 * speedMultiplyer;
     wall.speedY = 1 * speedMultiplyer;
     localPos.y += -1 * speedMultiplyer;
     yOffset += 1 * speedMultiplyer;
+    // possible optimization: update locations way less frequently and tween sprites into new positions
+    socket.emit("updateLoc", id, localPos.x, localPos.y);
   }
   if (myGameArea.keys && myGameArea.keys[40]) {
     myBackground.speedY = -1 * speedMultiplyer;
     wall.speedY = -1 * speedMultiplyer;
     localPos.y += 1 * speedMultiplyer;
     yOffset -= 1 * speedMultiplyer;
+    // possible optimization: update locations way less frequently and tween sprites into new positions
+    socket.emit("updateLoc", id, localPos.x, localPos.y);
   }
-  // possible optimization: update locations way less frequently and tween sprites into new positions
-  socket.emit("updateLoc", id, localPos.x, localPos.y);
+
 
   //move background image
   myBackground.newPos();
