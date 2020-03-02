@@ -48,31 +48,29 @@
     <a href="index.html">Already have an account? Login here.</a>
   </form>
 </div>
- <!--
- <script>
-    function signUp() {
-      var data = {
-        email: document.forms[0].elements[0].value,
-        password: document.forms[0].elements[1].value,
-        name: document.forms[0].elements[2].value
-      };
-      $.ajax({
-        type: 'POST',
-        url: '/signup',
-        data,
-        success: function (data) {
-          window.alert('user created successfully');
-          window.location.replace('/index.html');
-        },
-        error: function (xhr) {
-          window.alert(JSON.stringify(xhr));
-          window.location.replace('/signup.html');
-        }
-      });
-    }
+<script>
+  function signUp() {
+    var data = {
+      email: document.forms[0].elements[0].value,
+      password: document.forms[0].elements[1].value,
+      name: document.forms[0].elements[2].value
+    };
+    $.ajax({
+      type: 'POST',
+      url: '/signup',
+      data,
+      success: function (data) {
+        window.alert('user created successfully');
+        window.location.replace('/index.html');
+      },
+      error: function (xhr) {
+        window.alert(JSON.stringify(xhr));
+        window.location.replace('/signup.html');
+      }
+    });
+  }
 </script>
--->
-    <script src="assets/js/indexScript.js"></script>
+<script src="assets/js/indexScript.js"></script>
 </body>
 
 </html>
