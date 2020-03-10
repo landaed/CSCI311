@@ -19,7 +19,6 @@ var config = {
    physics: {
       default: 'arcade',
       arcade: {
-         gravity: { y: 300 },
          debug: false
       }
    },
@@ -40,8 +39,8 @@ socket.on('connect', function() {
 function preload()
 {
    this.load.image('ground', 'assets/js/ground.jpg');
+   this.load.image("wall", "assets/js/wall.png");
    this.load.image('player', 'assets/js/character.png');
-   <!-- can load spritesheets here too -->
 }
 
 function create ()
@@ -50,13 +49,50 @@ function create ()
 
    // Creating a repeating background sprite
    const bg = this.add.tileSprite(0, 0, width, height, "ground");
-   this.add.image(400,300,'player');
    bg.setOrigin(0, 0);
+
+   // Creating obstacles
+   obstacles = this.physics.add.staticGroup();
+   obstacles.create(600, 400, 'wall').setScale(0.25).refreshBody();
+
+   // Creating a player
+   player = this.physics.add.sprite(100,450,'player').setScale(0.25);
+   player.setBounce(0.2);
+   player.setCollideWorldBounds(true);
+
+   // Creating a collider
+   this.physics.add.collider(player, obstacles);
 }
 
 function update ()
 {
-
+   // controls
+   cursors = this.input.keyboard.createCursorKeys();
+   if (cursors.left.isDown)
+   {
+      player.setVelocityX(-160);
+      // play animations here
+   }
+   else if (cursors.right.isDown)
+   {
+      player.setVelocityX(160);
+   }
+   else
+   {
+      player.setVelocityX(0);
+   }
+   if (cursors.up.isDown)
+   {
+      player.setVelocityY(-160);
+   }
+   else if (cursors.down.isDown)
+   {
+      player.setVelocityY(160);
+   }
+   else
+   {
+      player.setVelocityY(0);
+   }
 }
 /*
 //run once at the beginning of the game
