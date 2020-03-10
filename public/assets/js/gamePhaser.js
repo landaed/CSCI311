@@ -56,7 +56,7 @@ function create ()
    obstacles.create(600, 400, 'wall').setScale(0.25).refreshBody();
 
    // Creating a player
-   player = this.physics.add.sprite(100,450,'player').setScale(0.25);
+   player = this.physics.add.sprite(100,450,'player').setSize(350,350,true).setScale(0.25);
    player.setBounce(0.2);
    player.setCollideWorldBounds(true);
 
