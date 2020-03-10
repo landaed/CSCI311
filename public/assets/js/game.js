@@ -257,7 +257,7 @@ myGameArea.canvas.addEventListener('click', function() {
   var origin = new Vector(400, 300);
   mouse.sub(origin);
   mouse.normalize();
-  bullet = new component(20, 20, "red", 400, 300, "color", id);
+  bullet = new component(20, 20, "red", 425, 325, "color", id);
   bullet.speedX= mouse.x* speedMultiplyer * 4;
   bullet.speedY= mouse.y * speedMultiplyer * 4;
   bullets.push(bullet);
