@@ -147,11 +147,8 @@ function move (sign, axis){
 }
 //runs every frame
 function updateGameArea() {
-   //console.log(socket.id);
-  //get new player list every frame
   //(likely super inefficient to get a list of object each frame, perhaps just location values is better?)
   socket.on("recievePlayers", function(p){
-  //  console.log(p);
     //empty our local array of players
     players = {};
     //refill the array from the servers array
