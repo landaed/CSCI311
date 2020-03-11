@@ -1,21 +1,23 @@
-/*var myGamePiece;
+var myGamePiece;
 var wall;
 var myBackground;
+var player;
 var speedMultiplyer = 3;
 var bullets = [];
-var socket = io();
 var players = {};
 var obstacles = {};
 var initPlayers = false;
 var id; // our socket id
 // offsets to figure out where to draw other players
 var yOffset = 0;
-var xOffset = 0;*/
+var xOffset = 0;
 
 var config = {
    type: Phaser.AUTO,
    width: 800,
    height: 600,
+   zoom: 1,
+   pixelArt: true,
    physics: {
       default: 'arcade',
       arcade: {
@@ -25,17 +27,12 @@ var config = {
    scene: {
       preload: preload,
       create: create,
-      update:update
+      update: update
    }
 };
 
 var game = new Phaser.Game(config);
-/*
-socket.on('connect', function() {
-   id = socket.id;
-   startGameOnConnect();
-})
-*/
+
 function preload()
 {
    this.load.image('ground', 'assets/js/ground.jpg');
@@ -45,23 +42,48 @@ function preload()
 
 function create ()
 {
+   var self = this;
    const { width, height } = this.sys.game.config;
-
    // Creating a repeating background sprite
    const bg = this.add.tileSprite(0, 0, width, height, "ground");
    bg.setOrigin(0, 0);
 
    // Creating obstacles
    obstacles = this.physics.add.staticGroup();
-   obstacles.create(600, 400, 'wall').setScale(0.25).refreshBody();
+   obstacles.create(600, 400, 'wall').setScale(0.15).refreshBody();
+
 
    // Creating a player
-   player = this.physics.add.sprite(100,450,'player').setSize(350,350,true).setScale(0.25);
-   player.setBounce(0.2);
-   player.setCollideWorldBounds(true);
+   player = this.physics.add.sprite(0,0,'player').setSize(350,350,true).setScale(0.10);
+   //player.setBounce(0.2).setCollideWorldBounds(true);
+   player.setDataEnabled();
 
+   // Setup username display
+   player.data.set('name', 'PlayerName'); // replace with username
+   nameText = this.add.text(0, 30, '', { font: '16px Courier', fill: '#00ff00' }).setOrigin(0.5);
+   nameText.setText([
+         player.data.get('name')
+    ]);
+
+   // Setup container for player and name
+   // Note: player position is relative to container, so use container position for coordinates
+   playerContainer = this.add.container(500, 450, [ player, nameText ]);
+   playerContainer.setSize(30, 30);
+   this.physics.world.enable(playerContainer);
+   playerContainer.body.setBounce(0.2).setCollideWorldBounds(true);
+   // Creating a camera
+   this.cameras.main.setZoom(1.5);
+   this.cameras.main.setBounds(0, 0, width, height);
+   this.cameras.main.startFollow(playerContainer);
    // Creating a collider
-   this.physics.add.collider(player, obstacles);
+   this.physics.add.collider(playerContainer, obstacles);
+
+   socket = io();
+   socket.on('initPlayers', function(p) {
+      id = socket.id;
+      players[id] = player;
+      startGameOnConnect(p,self);
+   })
 }
 
 function update ()
@@ -70,64 +92,84 @@ function update ()
    cursors = this.input.keyboard.createCursorKeys();
    if (cursors.left.isDown)
    {
-      player.setVelocityX(-160);
+      playerContainer.body.setVelocityX(-160);
       // play animations here
    }
    else if (cursors.right.isDown)
    {
-      player.setVelocityX(160);
+      playerContainer.body.setVelocityX(160);
    }
    else
    {
-      player.setVelocityX(0);
+      playerContainer.body.setVelocityX(0);
    }
    if (cursors.up.isDown)
    {
-      player.setVelocityY(-160);
+      playerContainer.body.setVelocityY(-160);
    }
    else if (cursors.down.isDown)
    {
-      player.setVelocityY(160);
+      playerContainer.body.setVelocityY(160);
    }
    else
    {
-      player.setVelocityY(0);
+      playerContainer.body.setVelocityY(0);
    }
+   if (id != null)
+   {
+      socket.emit("updateLoc", id, playerContainer.x, playerContainer.y);
+   }
+
 }
-/*
+
+
 //run once at the beginning of the game
-function startGameOnConnect() {
+function startGameOnConnect(p,self) {
    console.log("socketIO is working. Starting Game!");
    // creating a player game object
-   var player = new component(60, 50, "./assets/js/Character.png", 400, 300, "image", id);
-   // passing the player object to the server
-   socket.emit("addPlayer", player);
-   // request players list from the server
-   socket.emit("getPlayers");
+   //var player = new component(60, 50, "./assets/js/Character.png", 400, 300, "image", id);
 
    // set list of players that the server has to the local list of players
-   socket.on("initPlayers", function(p) {
+   //socket.on("initPlayers", function(p) {
       //iterate through each player in the server's list
-      Object.keys(p).forEach((key, index) => {
-         if (id != key) {
-            console.log("key: " + key + " index: " + index);
-            let pServ = p[key];
+   Object.keys(p).forEach((key, index) => {
+      if (id != key) {
+         console.log("key: " + key + " index: " + index);
+         let pServ = p[key];
 
-            //create a new component based on what we recieved from the server.
-            locP = new component(pServ.width, pServ.height, pServ.color, pServ.x + xOffset, pServ.y + yOffset, pServ.type, pServ.id)
+         //create a new component based on what we recieved from the server.
+         //locP = new component(pServ.width, pServ.height, pServ.color, pServ.x + xOffset, pServ.y + yOffset, pServ.type, pServ.id)
 
-            //store that component in a local list of players
-            players[key] = locP;
-            //update will draw the component to the screen.
-            locP.update();
-         }
+         //store that component in a local list of players
+         players[key] = self.add.sprite(0, 0, 'player').setScale(0.10);
+         players[key].setDataEnabled();
 
-      });
+         // Setup username display
+         players[key].data.set('name', pServ.user);
+         otherPlayerText = self.add.text(0, 30, '', { font: '16px Courier', fill: '#00ff00' }).setOrigin(0.5);
+         otherPlayerText.setText([
+               players[key].data.get('name')
+          ]);
+
+         // Setup container for player and name
+         // Note: player position is relative to container, so use container position for coordinates
+         container = self.add.container(pServ.x, pServ.y, [ players[key], otherPlayerText ]);
+         //update will draw the component to the screen.
+         //locP.update();
+      }
    });
+   // passing the player object to the server
+   socket.emit("addPlayer", player.parentContainer.x, player.parentContainer.y, player.data.get('name'));
+   // request players list from the server
+   //socket.emit("getPlayers");
+   //});
 
+   /*
    //create a background
    myBackground = new component(900, 900, "./assets/js/ground.jpg", 0, 0, "image", id);
+   */
    socket.on("recieveWorld", function(p) {
+   /*
       //  console.log(p);
       //empty our local array of players
       obstacles = {};
@@ -138,25 +180,83 @@ function startGameOnConnect() {
          locO.worldPos.x = locO.x;
          locO.worldPos.y = locO.y;
          obstacles[pServ.id] = locO;
-      })
+      })*/
    });
+   /*
    //create an obstacle
    z = new component(30, 30, "red", 20, 20, "color", "lolol");
    wall = new component(30, 30, "blue", 300, 300, "color", id);
    wall.worldPos.x = 300;
    wall.worldPos.y = 300;
-
+   });
+   */
+   /*
    socket.emit("updateLoc", id, localPos.x, localPos.y);
    myGameArea.start();
+   */
+   socket.on("recievePlayers", function(p) {
+      if (p.id != id)
+      {
+         players[p.id].parentContainer.x = p.x;
+         players[p.id].parentContainer.y = p.y;
+      }
 
+      /*
+      //  console.log(p);
+      //empty our local array of players
+      players = {};
+      //refill the array from the servers array
+      Object.keys(p).forEach((key, index) => {
+         let pServ = p[key];
+
+         // if it's us, render in the center
+         if (key != id) {
+            //locP = new component(pServ.width, pServ.height, pServ.color, 400, 300, pServ.type, id);
+
+         }/* else // otherwise, figure out the right place to render them relative to us
+         {
+            locP = new component(pServ.width, pServ.height, pServ.color, pServ.x + xOffset, pServ.y + yOffset, pServ.type, pServ.id);
+         }
+         players[pServ.id] = locP;
+      })
+      */
+   });
+
+   socket.on("newPlayer", function(p) {
+      if (p.id != id)
+      {
+         //store that component in a local list of players
+         players[p.id] = self.add.sprite(0, 0, 'player').setScale(0.10);
+         players[p.id].setDataEnabled();
+
+         // Setup username display
+         players[p.id].data.set('name', p.user);
+         otherPlayerText = self.add.text(0, 30, '', { font: '16px Courier', fill: '#00ff00' }).setOrigin(0.5);
+         otherPlayerText.setText([
+               p.user
+          ]);
+          console.log("Other player's name is " + p.user);
+
+         // Setup container for player and name
+         // Note: player position is relative to container, so use container position for coordinates
+         container = self.add.container(p.x, p.y, [ players[p.id], otherPlayerText ]);
+      }
+   });
+
+   socket.on("deletePlayer", function(p) {
+      if (p.id != id)
+      {
+         players[p.id].parentContainer.setActive(false).setVisible(false).destroy;
+         delete players[p.id];
+      }
+   });
 }
 //used to track this clients player characters global position (not sure if needed,
 //still thinking about how to handle movement accross server)
 var localPos = new Vector(400, 300);
-
 //this is the canvas essentially.
 //we probably should make this larger and responsive
-var myGameArea = {
+/*var myGameArea = {
    canvas: document.getElementById("game"),
    start: function() {
       this.canvas.width = 800;
@@ -175,9 +275,16 @@ var myGameArea = {
    clear: function() {
       this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
    }
+}*/
+
+function displayChar(pServ) {
+   // Creating a player
+   otherPlayer = this.add.sprite(0,0).setScale(0.10);
+   //player.setBounce(0.2).setCollideWorldBounds(true);
+
 }
 
-function collisionDetection(playerX, playerY, sign, axis) {
+/*function collisionDetection(playerX, playerY, sign, axis) {
    var isTrue = false;
    Object.keys(obstacles).forEach((key, index) => {
       if (playerX > obstacles[key].worldPos.x - (obstacles[key].width) && playerX < obstacles[key].worldPos.x + (obstacles[key].width / 2) &&
@@ -196,8 +303,8 @@ function collisionDetection(playerX, playerY, sign, axis) {
 
    //console.log("NoCol");
    return false;
-}
-
+}*/
+/*
 function move(sign, axis) {
    if (axis == 'x') {
       myBackground.speedX = sign * speedMultiplyer;
@@ -319,7 +426,8 @@ function updateGameArea() {
    z.update();
 
 
-}
+}*/
+/*
 //handle clicking (for instantiating bullets)
 myGameArea.canvas.addEventListener('click', function() {
    var sX = event.clientX;
@@ -333,5 +441,4 @@ myGameArea.canvas.addEventListener('click', function() {
    bullet.speedY = mouse.y * speedMultiplyer * 4;
    bullets.push(bullet);
 }, false);
--->
 */
