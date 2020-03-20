@@ -170,10 +170,10 @@ io.on('connection', function(socket){
     console.log("serverside player length: " + Object.keys(players).length + " Added ID: " + socket.id);
     console.log("Player name was " + players[socket.id].user);
     io.sockets.emit("newPlayer", players[socket.id]);
-  })
-  socket.on("fire", function (id, targetX, targetY){
-    io.sockets.emit("fired", id, targetX, targetY);
-  })
+});
+socket.on("fire", function (id, targetX, targetY){
+  io.sockets.emit("fired", id, targetX, targetY);
+});
   socket.on("getPlayers", function(){
      //console.log(Object.keys(players).length);
      //socket.emit("initPlayers", players);

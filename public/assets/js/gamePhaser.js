@@ -34,9 +34,10 @@ var config = {
 
 var game = new Phaser.Game(config);
 
+// projectiles from the player
 var Projectile = new Phaser.Class({
 
-   Extends: Phaser.GameObjects.Image,
+   Extends: Phaser.GameObjects.Sprite,
 
    initialize:
 
@@ -136,7 +137,7 @@ function create() {
       var projectile = projectiles.get().setActive(true).setVisible(true);
       if (projectile) {
          projectile.fire(playerContainer, reticle);
-         socket.emit("fire", id, playerContainer.x, playerContainer.y, reticle.x, reticle.y);
+         socket.emit("fire", id, reticle.x, reticle.y);
          //this.physics.add.collider(enemy, projectile, enemyHitCallback);
       }
    }, this);
@@ -289,12 +290,20 @@ function startGameOnConnect(p, self) {
       }
    });
 
-   socket.on('fired', function(id, targetX, targetY) {
-      if (p.id != id) {
+   socket.on('fired', function(otherID, targetX, targetY) {
+      if (otherID != id) {
          //fake a shot from source to target direction
+         var proj = projectiles.get().setActive(true).setVisible(true);
+         var dest = {
+            x: targetX,
+            y: targetY
+         }
+         if (proj) {
+            console.log("network fire to " + dest.x + "," + dest.y);
+            proj.fire(players[otherID].parentContainer, dest);
+         }
       }
-      startGameOnConnect(p, self);
-   })
+   });
 
    socket.on("newPlayer", function(p) {
       if (p.id != id) {
