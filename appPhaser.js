@@ -15,9 +15,11 @@ var io = require('socket.io')(http);
 var enemies = [];
 var players = {};
 var particles = [];
-var obstacles = {};
+var obstacles = [];
 var worldWidth = 900;
-var worldHeight = 900;/*
+var worldHeight = 900;
+var enemyID = 0;
+/*
 var wallLoc = [
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -151,13 +153,10 @@ io.on('connection', function(socket){
   socket.emit("initPlayers", players);
   socket.on('disconnect', function(){
     console.log('user disconnected, id: ' + socket.id);
-    io.sockets.emit("deletePlayer", players[socket.id]);
+    io.sockets.emit("deletePlayer", socket.id);
     delete players[socket.id];
   });
   socket.emit("recieveWorld",obstacles);
-  socket.on('updatePos', function(player){
-    //console.log('posX' + player.x + ", posY" + player.y);
-  });
   socket.on("addPlayer", function (posX, posY, name){
      console.log("new name is " + name);
     //newPlayer = new obj(player.width, player.height, player.color, player.x, player.y, player.type, player.id);
@@ -167,27 +166,43 @@ io.on('connection', function(socket){
        user: name,
        id: socket.id
     };
-    console.log("serverside player length: " + Object.keys(players).length + " Added ID: " + socket.id);
-    console.log("Player name was " + players[socket.id].user);
+    //console.log("serverside player length: " + Object.keys(players).length + " Added ID: " + socket.id);
+    //console.log("Player name was " + players[socket.id].user);
+    // spawn enemies already on the server
+    for (var i = 0, len = enemies.length; i < len; i++) {
+      socket.emit("spawnEnemy", enemies[i]);
+    }
+
+    // spawn a new enemy for testing
+    enemies[enemyID] = {x:300,y:300,sprite:'troll',id:enemyID, health: 1, speed: 5, range:100}; // need a list of safe locations to spawn
+    io.sockets.emit("spawnEnemy", enemies[enemyID]);
+    console.log(enemies[enemyID]);
+    enemyID++;
+
     io.sockets.emit("newPlayer", players[socket.id]);
-});
-socket.on("fire", function (id, targetX, targetY){
-  io.sockets.emit("fired", id, targetX, targetY);
-});
-  socket.on("getPlayers", function(){
+
+   });
+   socket.on("fire", function (id, targetX, targetY){
+     io.sockets.emit("fired", id, targetX, targetY);
+   });
+   socket.on("getPlayers", function(){
      //console.log(Object.keys(players).length);
      //socket.emit("initPlayers", players);
-  });
-  socket.on("updateLoc", function(id,x,y){
+   });
+   socket.on("updateLoc", function(id,x,y){
     //console.log("id: " + id + ", size: " + Object.keys(players).length);
-    //console.log("Updating location of ID: " + id)
+    //console.log("Updating location of ID: " + id);
     players[socket.id].x = x;
     players[socket.id].y = y;
-   // console.log("servX: " + players[id].x + ", servY: " + players[id].y);
+    //console.log("servX: " + players[id].x + ", servY: " + players[id].y);
     io.sockets.emit("recievePlayers", players[id]);
-  });
-
+   });
 });
+// update enemy locations at static interval
+setInterval(() => {
+   if (enemies[0] != null)
+      io.sockets.emit("recieveEnemies", enemies);
+}, 100, enemies);
 
 function obj(width, height, color, x, y, type, id) {
   this.type = type;

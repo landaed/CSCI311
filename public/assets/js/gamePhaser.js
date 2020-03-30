@@ -4,8 +4,8 @@ var myBackground;
 var player;
 var speedMultiplyer = 3;
 var bullets = [];
-var players = {};
-var obstacles = {};
+var players = [];
+var enemies = [];
 var initPlayers = false;
 var id; // our socket id
 // offsets to figure out where to draw other players
@@ -34,7 +34,8 @@ var config = {
 
 var game = new Phaser.Game(config);
 
-// projectiles from the player
+// Projectile code based on example from https://phaser.io/examples/v3/view/games/topdownshooter/topdowncombatmechanics
+// projectiles
 var Projectile = new Phaser.Class({
 
    Extends: Phaser.GameObjects.Sprite,
@@ -91,6 +92,7 @@ function preload() {
    this.load.image('player', 'assets/js/character.png');
    this.load.image('projec', 'assets/js/projectile.png');
    this.load.image('target', 'assets/js/target.png');
+   this.load.image('troll', 'assets/js/rock.jpg');
 }
 
 function create() {
@@ -104,8 +106,8 @@ function create() {
    bg.setOrigin(0, 0);
 
    // Creating obstacles
-   obstacles = this.physics.add.staticGroup();
-   obstacles.create(600, 400, 'wall').setScale(0.15).refreshBody();
+   this.obstacles = this.physics.add.staticGroup();
+   this.obstacles.create(600, 400, 'wall').setScale(0.15).refreshBody();
 
 
    // Creating a player
@@ -125,8 +127,14 @@ function create() {
 
    reticle = this.physics.add.sprite(800, 700, 'target');
    reticle.setOrigin(0.5, 0.5).setDisplaySize(25, 25).setCollideWorldBounds(true);
+
    // Creating our projectiles
    projectiles = this.physics.add.group({
+      classType: Projectile,
+      runChildUpdate: true
+   });
+
+   enemyProjectiles = this.physics.add.group({
       classType: Projectile,
       runChildUpdate: true
    });
@@ -138,7 +146,7 @@ function create() {
       if (projectile) {
          projectile.fire(playerContainer, reticle);
          socket.emit("fire", id, reticle.x, reticle.y);
-         //this.physics.add.collider(enemy, projectile, enemyHitCallback);
+         this.physics.add.collider(this.spawns, projectile, enemyHitCallback);
       }
    }, this);
 
@@ -165,13 +173,20 @@ function create() {
    playerContainer.setSize(30, 30);
    this.physics.world.enable(playerContainer);
    playerContainer.body.setBounce(0.2).setCollideWorldBounds(true);
+   //this.physics.add.collider(this.container, this.spawns);
    // Creating a camera
    this.cameras.main.setZoom(1.5);
    this.cameras.main.setBounds(0, 0, width, height);
    this.cameras.main.startFollow(playerContainer);
-   // Creating a collider
-   this.physics.add.collider(playerContainer, obstacles);
 
+   // enemy group
+   this.spawns = this.physics.add.group({
+      classType: Phaser.GameObjects.Sprite.Enemy
+   });
+
+   // Creating player colliders
+   this.physics.add.collider(playerContainer, this.obstacles);
+   this.physics.add.collider(playerContainer, this.spawns);
 
    socket = io();
    socket.on('initPlayers', function(p) {
@@ -207,6 +222,17 @@ function update() {
    reticle.body.velocity.y = playerContainer.body.velocity.y;
    constrainReticle(reticle);
 
+}
+
+function enemyHitCallback(projectileHit, enemyHit)
+{
+   enemyHit.health--;
+   if (enemyHit.health <= 0)
+   {
+      enemyHit.setVisible(false).setActive(false);
+   }
+
+   projectileHit.setVisible(false).setActive(false);
 }
 
 function constrainReticle(reticle) {
@@ -328,10 +354,33 @@ function startGameOnConnect(p, self) {
       }
    });
 
-   socket.on("deletePlayer", function(p) {
-      if (p.id != id) {
-         players[p.id].parentContainer.setActive(false).setVisible(false).destroy;
-         delete players[p.id];
+   // spawn an enemy where the server told us to
+   socket.on("spawnEnemy", function(spawn) {
+      var enemy = new Enemy(self, spawn.x, spawn.y, spawn.sprite, spawn.id, spawn.health, spawn.speed, spawn.range);
+
+      // Setup container for enemy and bar
+      //enemyContainer = self.add.container(spawn.x, spawn.y, [enemy, healthBar]);
+      self.spawns.add(enemy); // switch to enemyContainer when healthbar is added
+      enemies[spawn.id] = enemy;
+      console.log(enemies[spawn.id]);
+      console.log("id " + spawn.id);
+   });
+
+   // update locations of enemies
+   socket.on("recieveEnemies", function(newEnemies) {
+      self.spawns.children.each(function(enemy) {
+         if (enemies.length >= newEnemies.length)
+         {
+            enemies[enemy.id].x = newEnemies[enemy.id].x;
+            enemies[enemy.id].y = newEnemies[enemy.id].y;
+         }
+      }, this);
+   });
+
+   socket.on("deletePlayer", function(pID) {
+      if (pID != id) {
+         players[pID].parentContainer.setActive(false).setVisible(false).destroy;
+         delete players[pID];
       }
    });
 }
