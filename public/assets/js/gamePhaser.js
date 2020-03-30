@@ -7,6 +7,7 @@ var bullets = [];
 var players = {};
 var obstacles = {};
 var initPlayers = false;
+var itemGroup;
 var id; // our socket id
 // offsets to figure out where to draw other players
 var yOffset = 0;
@@ -32,6 +33,46 @@ var config = {
    }
 };
 
+var HttpClient = function() {
+    console.log("httpClient");
+    this.get = function(aUrl, aCallback) {
+        var anHttpRequest = new XMLHttpRequest();
+        anHttpRequest.onreadystatechange = function() {
+
+            if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200){
+                console.log("got call back!");
+                aCallback(anHttpRequest.responseText);
+              }
+              else{
+                console.log("failed callback");
+              }
+        }
+
+        anHttpRequest.open( "GET", aUrl, true );
+        anHttpRequest.send( null );
+    }
+}
+
+function getCookie(cname) {
+  var name = cname + "=";
+  var decodedCookie = decodeURIComponent(document.cookie);
+  var ca = decodedCookie.split(';');
+  for(var i = 0; i <ca.length; i++) {
+    var c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return "";
+}
+
+var client;
+var client_id;
+
+
 var game = new Phaser.Game(config);
 
 // projectiles from the player
@@ -40,7 +81,6 @@ var Projectile = new Phaser.Class({
    Extends: Phaser.GameObjects.Sprite,
 
    initialize:
-
       // Projectile Constructor
       function Projectile(scene) {
          Phaser.GameObjects.Sprite.call(this, scene, 0, 0, 'projectile');
@@ -89,11 +129,18 @@ function preload() {
    this.load.image('ground', 'assets/js/ground.jpg');
    this.load.image("wall", "assets/js/wall.png");
    this.load.image('player', 'assets/js/character.png');
-   this.load.image('projec', 'assets/js/projectile.png');
+   this.load.image('projec', 'assets/js/projectile.png')
+   this.load.image('item', 'assets/js/item.png');
    this.load.image('target', 'assets/js/target.png');
 }
 
 function create() {
+  var x = getCookie("_id").split(':');
+  x = x[1];
+  var result = x.substring(1, x.length-1);
+  console.log("\n \n meow \n");
+  console.log(result);
+  client_id=result;
    var self = this;
    const {
       width,
@@ -106,8 +153,26 @@ function create() {
    // Creating obstacles
    obstacles = this.physics.add.staticGroup();
    obstacles.create(600, 400, 'wall').setScale(0.15).refreshBody();
+   itemGroup = this.physics.add.staticGroup({
+        key: 'item',
+        frameQuantity: 10,
+        immovable: true,
+        width: 0.1,
+        height: 0.1,
+        name: 'awesome potion',
+        type: 'potion'
+    });
+    var children = itemGroup.getChildren();
 
+    for (var i = 0; i < children.length; i++)
+    {
+        var x = Phaser.Math.Between(50, 750);
+        var y = Phaser.Math.Between(50, 550);
+        children[i].setScale(.1);
+        children[i].setPosition(x, y);
+    }
 
+    itemGroup.refresh();
    // Creating a player
    player = this.physics.add.sprite(0, 0, 'player').setSize(350, 350, true).setScale(0.10);
    //player.setBounce(0.2).setCollideWorldBounds(true);
@@ -179,6 +244,20 @@ function create() {
       players[id] = player;
       startGameOnConnect(p, self);
    })
+
+   this.physics.add.overlap(player, itemGroup, pickup);
+}
+
+function pickup(player, item){
+  //add item to db
+    getItem("potion of truth", "potion");
+  //  Hide the sprite
+    itemGroup.killAndHide(item);
+
+    //  And disable the body
+    item.body.enable = false;
+
+    console.log("pickedup item");
 }
 
 function update() {
@@ -339,4 +418,26 @@ function startGameOnConnect(p, self) {
 function resetProjectile(projectile) {
    // Destroy the projectile
    projectile.kill();
+}
+
+
+
+function getItem(name, type) {
+  console.log(client_id);
+  var data = {
+    id: client_id,
+    name: name,
+    type: type
+  };
+  $.ajax({
+    type: 'POST',
+    url: '/item',
+    data,
+    success: function (data) {
+      console.log('user picked up item successfully, client_id: ' + client_id);
+    },
+    error: function (xhr) {
+      console.log("failed to pickup item " + JSON.stringify(xhr));
+    }
+  });
 }

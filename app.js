@@ -3,7 +3,6 @@ require('dotenv').config();
 const classes = require('./public/assets/js/classes.js');
 const cookieParser = require('cookie-parser');
 const passport = require('passport');
-const mongoose = require('mongoose');
 const routes = require('./routes/main');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -82,29 +81,18 @@ var wallLoc = [
   [0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
   [0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ];
-// setup mongo connection
-const uri = process.env.MONGO_CONNECTION_URL;
-mongoose.connect(uri, { useNewUrlParser : true, useCreateIndex: true, useUnifiedTopology: true});
-mongoose.connection.on('error', (error) => {
-  console.log(error);
-  process.exit(1);
-});
-mongoose.connection.on('connected', function () {
-  console.log('connected to mongo');
-});
-
 
 //set up obstacels
-for(var i = 0; i < worldWidth/30; i++){
-  for(var k = 0; k < worldHeight/30; k++){
-    if(wallLoc[i][k] == 1){
-      obstacle = new obj(30, 30, "grey", k*30, i*30, "color", k+i * i * i * i);
-      console.log("objX: " + obstacle.x +
-    ", objY: " + obstacle.y + ", objW: " + obstacle.width + ", objH: " + obstacle.height);
-      obstacles[k+i * i * i * i] = obstacle;
-    }
-  }
-}
+//for(var i = 0; i < worldWidth/30; i++){
+  //for(var k = 0; k < worldHeight/30; k++){
+    //if(wallLoc[i][k] == 1){
+      //obstacle = new obj(30, 30, "grey", k*30, i*30, "color", k+i * i * i * i);
+  //    console.log("objX: " + obstacle.x +
+    //", objY: " + obstacle.y + ", objW: " + obstacle.width + ", objH: " + obstacle.height);
+  //    obstacles[k+i * i * i * i] = obstacle;
+    //}
+  //}
+//}
 
 // update express settings
 app.use(bodyParser.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded

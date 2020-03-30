@@ -1,9 +1,22 @@
 const passport = require('passport');
 const express = require('express');
 const jwt = require('jsonwebtoken');
-
+const db = require("../models/models.js");
 const tokenList = {};
 const router = express.Router();
+const UserModel = require('../models/userModel');
+const mongoose = require("mongoose");
+
+const createItem = function(userID, item) {
+  console.log(">> Add Item:", item);
+  console.log(">> id:", userID);
+
+  return db.create(
+        {name: item.name,
+        type: item.type,
+        id: mongoose.Types.ObjectId(userID)}
+  );
+};
 
 router.get('/status', (req, res, next) => {
   res.status(200).json({ status: 'ok' });
@@ -37,6 +50,10 @@ router.post('/login', async (req, res, next) => {
         // store tokens in cookie
         res.cookie('jwt', token);
         res.cookie('refreshJwt', refreshToken);
+        console.log("email: " + user.email);
+        console.log("_id: " + user._id);
+        res.cookie("email", user.email);
+        res.cookie("_id", user._id);
 
         // store tokens in memory
         tokenList[refreshToken] = {
@@ -72,6 +89,23 @@ router.post('/token', (req, res) => {
   }
 });
 
+router.post('/item', (req, res) => {
+  console.log("item end point reached");
+  const {id, name, type} = req.body;
+  console.log("user id for item:" + id);
+  console.log("user name for item:" + name);
+  console.log("user type for item:" + type);
+  const run = async function() {
+    item = await createItem(id,{
+      name: name,
+      type: type
+    });
+    console.log("\n>> item:\n", req.body);
+  };
+  run();
+  res.status(200).json({ message: 'added item' });
+});
+
 router.post('/logout', (req, res) => {
   if (req.cookies) {
     const refreshToken = req.cookies['refreshJwt'];
@@ -83,4 +117,21 @@ router.post('/logout', (req, res) => {
   res.status(200).json({ message: 'logged out' });
 });
 
+router.get('/profile', function(req, res, next) {
+  passport.authenticate('basic', { session: false }),
+    function(req, res) {
+      res.json({ id: req.user.id, username: req.user.username });
+    }
+});
+
 module.exports = router;
+// setup mongo connection
+const uri = process.env.MONGO_CONNECTION_URL;
+mongoose.connect(uri, { useNewUrlParser : true, useCreateIndex: true, useUnifiedTopology: true});
+mongoose.connection.on('error', (error) => {
+  console.log(error);
+  process.exit(1);
+});
+mongoose.connection.on('connected', function () {
+  console.log('connected to mongo');
+});
