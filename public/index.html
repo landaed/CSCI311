@@ -2,12 +2,12 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>Login Page</title>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-  <link href="assets/css/main.css" rel="stylesheet">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+   <title>Login Page</title>
+   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+   <link href="assets/css/main.css" rel="stylesheet">
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 </head>
 
 <body class="text-center">
@@ -76,30 +76,32 @@
    </div>
 
 
-<script src="/socket.io/socket.io.js"></script>
-<script>
-var socket = io.connect('http://localhost');
-function signIn() {
-var data = {
-email: document.forms[0].elements[0].value,
-password: document.forms[0].elements[1].value
-};
-$.ajax({
-type: 'POST',
-url: '/login',
-data,
-success: function (data) {
-window.location.replace('/game.html');
-},
-error: function (xhr) {
-window.alert(JSON.stringify(xhr));
-window.location.replace('/index.html');
-}
-});
-}
-</script>
-<script src="assets/js/indexScript.js"></script>
-</script>
+   <script src="/socket.io/socket.io.js"></script>
+   <script>
+      var socket = io.connect('http://localhost');
+
+      function signIn() {
+         var data = {
+            email: document.forms[0].elements[0].value,
+            password: document.forms[0].elements[1].value
+         };
+         $.ajax({
+            type: 'POST',
+            url: '/login',
+            data,
+            success: function(data) {
+               window.location.replace('/game.html');
+            },
+            error: function(xhr) {
+               window.alert(JSON.stringify(xhr));
+               window.location.replace('/index.html');
+            }
+         });
+      }
+   </script>
+   <script src="assets/js/indexScript.js"></script>
+   </script>
 
 </body>
+
 </html>

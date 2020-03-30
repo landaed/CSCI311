@@ -11,6 +11,7 @@ var id; // our socket id
 // offsets to figure out where to draw other players
 var yOffset = 0;
 var xOffset = 0;
+var rotation;
 
 var config = {
    type: Phaser.AUTO,
@@ -69,7 +70,7 @@ var Projectile = new Phaser.Class({
          this.xSpeed = -this.speed * Math.sin(this.direction);
          this.ySpeed = -this.speed * Math.cos(this.direction);
       }
-      this.rotation = shooter.rotation;
+      this.rotation = rotation;
       this.born = 0; // Time since new bullet spawned
    },
 
@@ -89,10 +90,20 @@ var Projectile = new Phaser.Class({
 function preload() {
    this.load.image('ground', 'assets/js/ground.jpg');
    this.load.image("wall", "assets/js/wall.png");
-   this.load.image('player', 'assets/js/character.png');
+   this.load.image('player', 'assets/sprite/Archer/Archer_Idle_1.png');
    this.load.image('projec', 'assets/js/projectile.png');
    this.load.image('target', 'assets/js/target.png');
    this.load.image('troll', 'assets/js/rock.jpg');
+
+   this.load.path = 'assets/sprite/';
+   this.load.image('playerIdle1', 'Archer/Archer_Idle_1.png');
+   this.load.image('playerIdle2', 'Archer/Archer_Idle_2.png');
+   this.load.image('playerIdle3', 'Archer/Archer_Idle_3.png');
+   this.load.image('playerIdle4', 'Archer/Archer_Idle_4.png');
+   this.load.image('playerWalk1', 'Archer/Archer_Walk_1.png');
+   this.load.image('playerWalk2', 'Archer/Archer_Walk_2.png');
+   this.load.image('playerWalk3', 'Archer/Archer_Walk_3.png');
+   this.load.image('playerWalk4', 'Archer/Archer_Walk_4.png');
 }
 
 function create() {
@@ -108,17 +119,39 @@ function create() {
    // Creating obstacles
    this.obstacles = this.physics.add.staticGroup();
    this.obstacles.create(600, 400, 'wall').setScale(0.15).refreshBody();
+   this.anims.create({
+        key: 'playerIdle',
+        frames: [
+            { key: 'playerIdle1' },
+            { key: 'playerIdle2' },
+            { key: 'playerIdle3' },
+            { key: 'playerIdle4', duration: 50 }
+        ],
+        frameRate: 8,
+        repeat: -1
+   });
 
+   this.anims.create({
+        key: 'playerMove',
+        frames: [
+            { key: 'playerWalk1' },
+            { key: 'playerWalk2' },
+            { key: 'playerWalk3' },
+            { key: 'playerWalk4', duration: 50 }
+        ],
+        frameRate: 8,
+        repeat: -1
+   });
 
    // Creating a player
-   player = this.physics.add.sprite(0, 0, 'player').setSize(350, 350, true).setScale(0.10);
+   player = this.physics.add.sprite(0, 0, 'player').setSize(350, 350, true).setScale(1.8).play('playerIdle');
    //player.setBounce(0.2).setCollideWorldBounds(true);
    player.setDataEnabled();
 
    // Setup username display
    player.data.set('name', 'PlayerName'); // replace with username
-   nameText = this.add.text(0, 30, '', {
-      font: '16px Courier',
+   nameText = this.add.text(0, 35, '', {
+      font: '14px Courier',
       fill: '#00ff00'
    }).setOrigin(0.5);
    nameText.setText([
@@ -201,23 +234,31 @@ function update() {
    cursors = this.input.keyboard.createCursorKeys();
    if (cursors.left.isDown) {
       playerContainer.body.setVelocityX(-160);
-      // play animations here
+      player.anims.play('playerMove', true);
    } else if (cursors.right.isDown) {
       playerContainer.body.setVelocityX(160);
+      player.anims.play('playerMove', true);
    } else {
       playerContainer.body.setVelocityX(0);
    }
    if (cursors.up.isDown) {
       playerContainer.body.setVelocityY(-160);
+      player.anims.play('playerMove', true);
    } else if (cursors.down.isDown) {
       playerContainer.body.setVelocityY(160);
+      player.anims.play('playerMove', true);
    } else {
       playerContainer.body.setVelocityY(0);
    }
    if (id != null) {
       socket.emit("updateLoc", id, playerContainer.x, playerContainer.y);
    }
-   player.rotation = Phaser.Math.Angle.Between(playerContainer.x, playerContainer.y, reticle.x, reticle.y);
+
+   if (!(cursors.down.isDown || cursors.up.isDown || cursors.left.isDown || cursors.right.isDown))
+   {
+      player.anims.play('playerIdle', true);
+   }
+   rotation = Phaser.Math.Angle.Between(playerContainer.x, playerContainer.y, reticle.x, reticle.y)
    reticle.body.velocity.x = playerContainer.body.velocity.x;
    reticle.body.velocity.y = playerContainer.body.velocity.y;
    constrainReticle(reticle);
@@ -226,13 +267,17 @@ function update() {
 
 function enemyHitCallback(projectileHit, enemyHit)
 {
-   enemyHit.health--;
-   if (enemyHit.health <= 0)
+   if (projectileHit.active === true && enemyHit.active === true)
    {
-      enemyHit.setVisible(false).setActive(false);
+      enemyHit.health--;
+      if (enemyHit.health <= 0)
+      {
+         enemyHit.setActive(false).setVisible(false).destroy;
+      }
+
+      projectileHit.setVisible(false).setActive(false).destroy;
    }
 
-   projectileHit.setVisible(false).setActive(false);
 }
 
 function constrainReticle(reticle) {
@@ -261,13 +306,13 @@ function startGameOnConnect(p, self) {
          let pServ = p[key];
 
          //store that component in a local list of players
-         players[key] = self.add.sprite(0, 0, 'player').setScale(0.10);
+         players[key] = self.add.sprite(0, 0, 'player').setScale(1.8);
          players[key].setDataEnabled();
 
          // Setup username display
          players[key].data.set('name', pServ.user);
-         otherPlayerText = self.add.text(0, 30, '', {
-            font: '16px Courier',
+         otherPlayerText = self.add.text(0, 35, '', {
+            font: '14px Courier',
             fill: '#00ff00'
          }).setOrigin(0.5);
          otherPlayerText.setText([
