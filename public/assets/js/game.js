@@ -147,11 +147,8 @@ function move (sign, axis){
 }
 //runs every frame
 function updateGameArea() {
-   //console.log(socket.id);
-  //get new player list every frame
   //(likely super inefficient to get a list of object each frame, perhaps just location values is better?)
   socket.on("recievePlayers", function(p){
-  //  console.log(p);
     //empty our local array of players
     players = {};
     //refill the array from the servers array
@@ -257,7 +254,7 @@ myGameArea.canvas.addEventListener('click', function() {
   var origin = new Vector(400, 300);
   mouse.sub(origin);
   mouse.normalize();
-  bullet = new component(20, 20, "red", 400, 300, "color", id);
+  bullet = new component(20, 20, "red", 425, 325, "color", id);
   bullet.speedX= mouse.x* speedMultiplyer * 4;
   bullet.speedY= mouse.y * speedMultiplyer * 4;
   bullets.push(bullet);

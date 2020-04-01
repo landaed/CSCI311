@@ -3,6 +3,7 @@ require('dotenv').config();
 const classes = require('./public/assets/js/classes.js');
 const cookieParser = require('cookie-parser');
 const passport = require('passport');
+const mongoose = require('mongoose');
 const routes = require('./routes/main');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -81,18 +82,29 @@ var wallLoc = [
   [0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
   [0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ];
+// setup mongo connection
+const uri = process.env.MONGO_CONNECTION_URL;
+mongoose.connect(uri, { useNewUrlParser : true, useCreateIndex: true, useUnifiedTopology: true});
+mongoose.connection.on('error', (error) => {
+  console.log(error);
+  process.exit(1);
+});
+mongoose.connection.on('connected', function () {
+  console.log('connected to mongo');
+});
+
 
 //set up obstacels
-//for(var i = 0; i < worldWidth/30; i++){
-  //for(var k = 0; k < worldHeight/30; k++){
-    //if(wallLoc[i][k] == 1){
-      //obstacle = new obj(30, 30, "grey", k*30, i*30, "color", k+i * i * i * i);
-  //    console.log("objX: " + obstacle.x +
+for(var i = 0; i < worldWidth/30; i++){
+  for(var k = 0; k < worldHeight/30; k++){
+    if(wallLoc[i][k] == 1){
+      obstacle = new obj(30, 30, "grey", k*30, i*30, "color", k+i * i * i * i);
+      //console.log("objX: " + obstacle.x +
     //", objY: " + obstacle.y + ", objW: " + obstacle.width + ", objH: " + obstacle.height);
-  //    obstacles[k+i * i * i * i] = obstacle;
-    //}
-  //}
-//}
+      obstacles[k+i * i * i * i] = obstacle;
+    }
+  }
+}
 
 // update express settings
 app.use(bodyParser.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
@@ -136,29 +148,43 @@ http.listen(process.env.PORT || 3000, () => {
 });
 io.on('connection', function(socket){
   console.log('a user connected, id: ' + socket.id);
+  socket.emit("initPlayers", players);
   socket.on('disconnect', function(){
     console.log('user disconnected, id: ' + socket.id);
-      delete players[socket.id];
+    io.sockets.emit("deletePlayer", players[socket.id]);
+    delete players[socket.id];
   });
   socket.emit("recieveWorld",obstacles);
   socket.on('updatePos', function(player){
     //console.log('posX' + player.x + ", posY" + player.y);
   });
-  socket.on("addPlayer", function (player){
-    newPlayer = new obj(player.width, player.height, player.color, player.x, player.y, player.type, player.id);
-    players[player.id] = newPlayer;
-    console.log("serverside player length: " + Object.keys(players).length + " Added ID: " + player.id);
-  })
+  socket.on("addPlayer", function (posX, posY, name){
+     console.log("new name is " + name);
+    //newPlayer = new obj(player.width, player.height, player.color, player.x, player.y, player.type, player.id);
+    players[socket.id] = {
+       x: posX,
+       y: posY,
+       user: name,
+       id: socket.id
+    };
+    console.log("serverside player length: " + Object.keys(players).length + " Added ID: " + socket.id);
+    console.log("Player name was " + players[socket.id].user);
+    io.sockets.emit("newPlayer", players[socket.id]);
+});
+socket.on("fire", function (id, targetX, targetY){
+  io.sockets.emit("fired", id, targetX, targetY);
+});
   socket.on("getPlayers", function(){
      //console.log(Object.keys(players).length);
-  //  socket.emit("initPlayers", players);
+     //socket.emit("initPlayers", players);
   });
   socket.on("updateLoc", function(id,x,y){
     //console.log("id: " + id + ", size: " + Object.keys(players).length);
-    players[id].x = x;
-    players[id].y = y;
+    //console.log("Updating location of ID: " + id)
+    players[socket.id].x = x;
+    players[socket.id].y = y;
    // console.log("servX: " + players[id].x + ", servY: " + players[id].y);
-    io.sockets.emit("recievePlayers", players);
+    io.sockets.emit("recievePlayers", players[id]);
   });
 
 });
