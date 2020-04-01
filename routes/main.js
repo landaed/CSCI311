@@ -53,7 +53,9 @@ router.post('/login', async (req, res, next) => {
         console.log("email: " + user.email);
         console.log("_id: " + user._id);
         res.cookie("email", user.email);
-        res.cookie("_id", user._id);
+        res.cookie("_id", user._id)
+        res.cookie("username", user.name);
+        console.log("username: " + user.name);
 
         // store tokens in memory
         tokenList[refreshToken] = {

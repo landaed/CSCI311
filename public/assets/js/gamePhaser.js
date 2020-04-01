@@ -135,12 +135,18 @@ function preload() {
 }
 
 function create() {
+  //get id from cookie
   var x = getCookie("_id").split(':');
   x = x[1];
   var result = x.substring(1, x.length-1);
   console.log("\n \n meow \n");
   console.log(result);
   client_id=result;
+
+  //get name from cookies
+  x = getCookie("username");
+  console.log(x);
+  var username = x;
    var self = this;
    const {
       width,
@@ -174,12 +180,12 @@ function create() {
 
     itemGroup.refresh();
    // Creating a player
-   player = this.physics.add.sprite(0, 0, 'player').setSize(350, 350, true).setScale(0.10);
+   player = this.physics.add.sprite(0, 0, 'player').setSize(35, 35, true).setScale(0.10);
    //player.setBounce(0.2).setCollideWorldBounds(true);
    player.setDataEnabled();
 
    // Setup username display
-   player.data.set('name', 'PlayerName'); // replace with username
+   player.data.set('name', username); // replace with username
    nameText = this.add.text(0, 30, '', {
       font: '16px Courier',
       fill: '#00ff00'
