@@ -2,6 +2,7 @@ var myGamePiece;
 var wall;
 var myBackground;
 var player;
+var playerContainer;
 var speedMultiplyer = 3;
 var bullets = [];
 var players = [];
@@ -12,6 +13,10 @@ var id; // our socket id
 var yOffset = 0;
 var xOffset = 0;
 var rotation;
+var map;
+var mapGrid = [];
+var finder;
+
 
 var config = {
    type: Phaser.AUTO,
@@ -104,6 +109,9 @@ function preload() {
    this.load.image('playerWalk2', 'Archer/Archer_Walk_2.png');
    this.load.image('playerWalk3', 'Archer/Archer_Walk_3.png');
    this.load.image('playerWalk4', 'Archer/Archer_Walk_4.png');
+
+   this.load.image("tiles", "../map/tileset.png");
+   this.load.tilemapTiledJSON("map", "../map/map.json");
 }
 
 function create() {
@@ -116,9 +124,31 @@ function create() {
    const bg = this.add.tileSprite(0, 0, width, height, "ground");
    bg.setOrigin(0, 0);
 
-   // Creating obstacles
-   this.obstacles = this.physics.add.staticGroup();
-   this.obstacles.create(600, 400, 'wall').setScale(0.15).refreshBody();
+   map = this.make.tilemap({key:"map"});
+   const tileset = map.addTilesetImage("ProjTileset", "tiles");
+   const floorLayer = map.createStaticLayer("Floor", tileset, 0, 0);
+   const floorDetailLayer = map.createStaticLayer("FloorDetail", tileset, 0, 0);
+   const wallsLayer = map.createStaticLayer("Walls", tileset, 0, 0);
+   const obstaclesLayer = map.createStaticLayer("Obstacles", tileset, 0, 0);
+   wallsLayer.setCollisionByProperty({collide:true});
+   obstaclesLayer.setCollisionByProperty({collide:true});
+
+   // setup pathfinding
+   // based on https://www.dynetisgames.com/2018/03/06/pathfinding-easystar-phaser-3/
+   finder = new EasyStar.js();
+   for (var y = 0; y < map.height; y++) {
+      var col = [];
+      for (var x = 0; x < map.width; x++) {
+         // In each cell we store the ID of the tile, which corresponds
+         // to its index in the tileset of the map ("ID" field in Tiled)
+         col.push(map.getTileAt(x, y, true, "Obstacles").index);
+      }
+      mapGrid.push(col);
+   }
+   finder.setGrid(mapGrid);
+   var acceptableTiles = [-1]; // -1 represents lack of tile in obstacle layer
+   finder.setAcceptableTiles(acceptableTiles);
+
    this.anims.create({
         key: 'playerIdle',
         frames: [
@@ -144,9 +174,10 @@ function create() {
    });
 
    // Creating a player
-   player = this.physics.add.sprite(0, 0, 'player').setSize(350, 350, true).setScale(1.8).play('playerIdle');
+   player = this.physics.add.sprite(0, -10, 'player').setSize(64, 64, true).setDisplaySize(64, 64).play('playerIdle');
    //player.setBounce(0.2).setCollideWorldBounds(true);
    player.setDataEnabled();
+   //this.physics.add.collider(this.player, obstaclesLayer);
 
    // Setup username display
    player.data.set('name', 'PlayerName'); // replace with username
@@ -202,8 +233,8 @@ function create() {
    }, this);
    // Setup container for player and name
    // Note: player position is relative to container, so use container position for coordinates
-   playerContainer = this.add.container(500, 450, [player, nameText]);
-   playerContainer.setSize(30, 30);
+   playerContainer = this.add.container(400, 300, [player, nameText]);
+   playerContainer.setSize(12,46);
    this.physics.world.enable(playerContainer);
    playerContainer.body.setBounce(0.2).setCollideWorldBounds(true);
    //this.physics.add.collider(this.container, this.spawns);
@@ -218,8 +249,9 @@ function create() {
    });
 
    // Creating player colliders
-   this.physics.add.collider(playerContainer, this.obstacles);
    this.physics.add.collider(playerContainer, this.spawns);
+   this.physics.add.collider(playerContainer, wallsLayer);
+   this.physics.add.collider(playerContainer, obstaclesLayer);
 
    socket = io();
    socket.on('initPlayers', function(p) {
@@ -227,7 +259,9 @@ function create() {
       players[id] = player;
       startGameOnConnect(p, self);
    })
+
 }
+
 
 function update() {
    // controls
@@ -258,12 +292,49 @@ function update() {
    {
       player.anims.play('playerIdle', true);
    }
+
    rotation = Phaser.Math.Angle.Between(playerContainer.x, playerContainer.y, reticle.x, reticle.y)
    reticle.body.velocity.x = playerContainer.body.velocity.x;
    reticle.body.velocity.y = playerContainer.body.velocity.y;
    constrainReticle(reticle);
-
 }
+
+function path(enemy, self)
+{
+   var x = playerContainer.x;
+   var y = playerContainer.y;
+   var toX = Math.floor(x/32);
+   var toY = Math.floor(y/32);
+   var fromX = Math.floor(enemy.x/32);
+   var fromY = Math.floor(enemy.y/32);
+
+   finder.findPath(fromX, fromY, toX, toY, function( path ) {
+        if (path === null) {
+            console.warn("Path was not found.");
+        } else {
+            moveCharacter(enemy, path, self);
+        }
+    });
+   finder.calculate();
+}
+
+function moveCharacter(character, path, self){
+    // Sets up a list of tweens, one for each tile to walk, that will be chained by the timeline
+    var tweens = [];
+    for(var i = 0; i < path.length-1; i++){
+        var ex = path[i+1].x;
+        var ey = path[i+1].y;
+        tweens.push({
+            targets: character,
+            x: {value: ex*map.tileWidth, duration: 200},
+            y: {value: ey*map.tileHeight, duration: 200}
+        });
+    }
+
+    self.tweens.timeline({
+        tweens: tweens
+    });
+};
 
 function enemyHitCallback(projectileHit, enemyHit)
 {
@@ -276,6 +347,8 @@ function enemyHitCallback(projectileHit, enemyHit)
       }
 
       projectileHit.setVisible(false).setActive(false).destroy;
+
+      socket.emit("killEnemy", enemyHit, player);
    }
 
 }
@@ -329,9 +402,6 @@ function startGameOnConnect(p, self) {
    socket.emit("addPlayer", player.parentContainer.x, player.parentContainer.y, player.data.get('name'));
 
    socket.on("recieveWorld", function(p) {
-      /*
-         //  console.log(p);
-         //empty our local array of players
          obstacles = {};
          //refill the array from the servers array
          Object.keys(p).forEach((key, index) => {
@@ -340,7 +410,7 @@ function startGameOnConnect(p, self) {
             locO.worldPos.x = locO.x;
             locO.worldPos.y = locO.y;
             obstacles[pServ.id] = locO;
-         })*/
+         })
    });
    /*
    //create an obstacle
@@ -370,7 +440,6 @@ function startGameOnConnect(p, self) {
             y: targetY
          }
          if (proj) {
-            console.log("network fire to " + dest.x + "," + dest.y);
             proj.fire(players[otherID].parentContainer, dest);
          }
       }
@@ -379,7 +448,7 @@ function startGameOnConnect(p, self) {
    socket.on("newPlayer", function(p) {
       if (p.id != id) {
          //store that component in a local list of players
-         players[p.id] = self.add.sprite(0, 0, 'player').setScale(0.10);
+         players[p.id] = self.add.sprite(0, 0, 'player').setScale(1.80);
          players[p.id].setDataEnabled();
 
          // Setup username display
@@ -397,18 +466,20 @@ function startGameOnConnect(p, self) {
          // Note: player position is relative to container, so use container position for coordinates
          container = self.add.container(p.x, p.y, [players[p.id], otherPlayerText]);
       }
+      // to test pathfinding
+      for (var i = 0, len = enemies.length; i < len; i++) {
+         path(enemies[i], self);
+      }
    });
 
    // spawn an enemy where the server told us to
    socket.on("spawnEnemy", function(spawn) {
       var enemy = new Enemy(self, spawn.x, spawn.y, spawn.sprite, spawn.id, spawn.health, spawn.speed, spawn.range);
-
+      enemy.setSize(32,32).setDisplaySize(32,32);
       // Setup container for enemy and bar
       //enemyContainer = self.add.container(spawn.x, spawn.y, [enemy, healthBar]);
       self.spawns.add(enemy); // switch to enemyContainer when healthbar is added
       enemies[spawn.id] = enemy;
-      console.log(enemies[spawn.id]);
-      console.log("id " + spawn.id);
    });
 
    // update locations of enemies
