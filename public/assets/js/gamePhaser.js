@@ -379,7 +379,7 @@ function startGameOnConnect(p, self) {
          let pServ = p[key];
 
          //store that component in a local list of players
-         players[key] = self.add.sprite(0, 0, 'player').setScale(1.8);
+         players[key] = self.add.sprite(0, 0, 'player').setDisplaySize(64,64);
          players[key].setDataEnabled();
 
          // Setup username display
@@ -448,7 +448,7 @@ function startGameOnConnect(p, self) {
    socket.on("newPlayer", function(p) {
       if (p.id != id) {
          //store that component in a local list of players
-         players[p.id] = self.add.sprite(0, 0, 'player').setScale(1.80);
+         players[p.id] = self.add.sprite(0, 0, 'player').setDisplaySize(64,64);
          players[p.id].setDataEnabled();
 
          // Setup username display
