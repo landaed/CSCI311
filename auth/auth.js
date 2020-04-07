@@ -1,9 +1,9 @@
 const passport = require('passport');
 const localStrategy = require('passport-local').Strategy;
 const JWTstrategy = require('passport-jwt').Strategy;
- 
+
 const UserModel = require('../models/userModel');
- 
+
 // handle user registration
 passport.use('signup', new localStrategy({
   usernameField: 'email',
@@ -37,7 +37,7 @@ passport.use('login', new localStrategy({
     return done(error);
   }
 }));
- 
+
 // verify token is valid
 passport.use(new JWTstrategy({
   secretOrKey: 'top_secret',

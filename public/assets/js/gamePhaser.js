@@ -8,6 +8,7 @@ var bullets = [];
 var players = [];
 var enemies = [];
 var initPlayers = false;
+var itemGroup;
 var id; // our socket id
 // offsets to figure out where to draw other players
 var yOffset = 0;
@@ -38,6 +39,46 @@ var config = {
    }
 };
 
+var HttpClient = function() {
+    console.log("httpClient");
+    this.get = function(aUrl, aCallback) {
+        var anHttpRequest = new XMLHttpRequest();
+        anHttpRequest.onreadystatechange = function() {
+
+            if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200){
+                console.log("got call back!");
+                aCallback(anHttpRequest.responseText);
+              }
+              else{
+                console.log("failed callback");
+              }
+        }
+
+        anHttpRequest.open( "GET", aUrl, true );
+        anHttpRequest.send( null );
+    }
+}
+
+function getCookie(cname) {
+  var name = cname + "=";
+  var decodedCookie = decodeURIComponent(document.cookie);
+  var ca = decodedCookie.split(';');
+  for(var i = 0; i <ca.length; i++) {
+    var c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return "";
+}
+
+var client;
+var client_id;
+
+
 var game = new Phaser.Game(config);
 
 // Projectile code based on example from https://phaser.io/examples/v3/view/games/topdownshooter/topdowncombatmechanics
@@ -47,7 +88,6 @@ var Projectile = new Phaser.Class({
    Extends: Phaser.GameObjects.Sprite,
 
    initialize:
-
       // Projectile Constructor
       function Projectile(scene) {
          Phaser.GameObjects.Sprite.call(this, scene, 0, 0, 'projectile');
@@ -96,7 +136,8 @@ function preload() {
    this.load.image('ground', 'assets/js/ground.jpg');
    this.load.image("wall", "assets/js/wall.png");
    this.load.image('player', 'assets/sprite/Archer/Archer_Idle_1.png');
-   this.load.image('projec', 'assets/js/projectile.png');
+   this.load.image('projec', 'assets/js/projectile.png')
+   this.load.image('item', 'assets/js/item.png');
    this.load.image('target', 'assets/js/target.png');
    this.load.image('troll', 'assets/js/rock.jpg');
 
@@ -115,6 +156,18 @@ function preload() {
 }
 
 function create() {
+  //get id from cookie
+  var x = getCookie("_id").split(':');
+  x = x[1];
+  var result = x.substring(1, x.length-1);
+  console.log("\n \n meow \n");
+  console.log(result);
+  client_id=result;
+
+  //get name from cookies
+  x = getCookie("username");
+  console.log(x);
+  var username = x;
    var self = this;
    const {
       width,
@@ -123,6 +176,27 @@ function create() {
    // Creating a repeating background sprite
    const bg = this.add.tileSprite(0, 0, width, height, "ground");
    bg.setOrigin(0, 0);
+
+   itemGroup = this.physics.add.staticGroup({
+        key: 'item',
+        frameQuantity: 10,
+        immovable: true,
+        width: 0.1,
+        height: 0.1,
+        name: 'awesome potion',
+        type: 'potion'
+   });
+   var children = itemGroup.getChildren();
+
+   for (var i = 0; i < children.length; i++)
+   {
+        var x = Phaser.Math.Between(50, 750);
+        var y = Phaser.Math.Between(50, 550);
+        children[i].setScale(.1);
+        children[i].setPosition(x, y);
+   }
+
+   itemGroup.refresh();
 
    map = this.make.tilemap({key:"map"});
    const tileset = map.addTilesetImage("ProjTileset", "tiles");
@@ -180,9 +254,9 @@ function create() {
    //this.physics.add.collider(this.player, obstaclesLayer);
 
    // Setup username display
-   player.data.set('name', 'PlayerName'); // replace with username
-   nameText = this.add.text(0, 35, '', {
-      font: '14px Courier',
+   player.data.set('name', username); // replace with username
+   nameText = this.add.text(0, 30, '', {
+      font: '16px Courier',
       fill: '#00ff00'
    }).setOrigin(0.5);
    nameText.setText([
@@ -260,6 +334,19 @@ function create() {
       startGameOnConnect(p, self);
    })
 
+   this.physics.add.overlap(player, itemGroup, pickup);
+}
+
+function pickup(player, item){
+  //add item to db
+    getItem("potion of truth", "potion");
+  //  Hide the sprite
+    itemGroup.killAndHide(item);
+
+    //  And disable the body
+    item.body.enable = false;
+
+    console.log("pickedup item");
 }
 
 
@@ -504,4 +591,26 @@ function startGameOnConnect(p, self) {
 function resetProjectile(projectile) {
    // Destroy the projectile
    projectile.kill();
+}
+
+
+
+function getItem(name, type) {
+  console.log(client_id);
+  var data = {
+    id: client_id,
+    name: name,
+    type: type
+  };
+  $.ajax({
+    type: 'POST',
+    url: '/item',
+    data,
+    success: function (data) {
+      console.log('user picked up item successfully, client_id: ' + client_id);
+    },
+    error: function (xhr) {
+      console.log("failed to pickup item " + JSON.stringify(xhr));
+    }
+  });
 }
