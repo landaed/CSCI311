@@ -101,7 +101,6 @@ var Projectile = new Phaser.Class({
 
    // Fires a bullet from the player to the reticle
    fire: function(shooter, target, angle) {
-
       this.setPosition(shooter.x, shooter.y); // Initial position
       this.direction = Math.atan((target.x - this.x) / (target.y - this.y));
       //this.setRotation(this.direction);
@@ -115,7 +114,7 @@ var Projectile = new Phaser.Class({
          this.xSpeed = -this.speed * Math.sin(this.direction);
          this.ySpeed = -this.speed * Math.cos(this.direction);
       }
-      this.rotation = rotation;
+      this.rotation = rotation+4.6;
       this.born = 0; // Time since new bullet spawned
    },
 
@@ -135,12 +134,14 @@ var Projectile = new Phaser.Class({
 function preload() {
    this.load.image('ground', 'assets/js/ground.jpg');
    this.load.image("wall", "assets/js/wall.png");
-   this.load.image('player', 'assets/sprite/Archer/Archer_Idle_1.png');
-   this.load.image('projec', 'assets/js/projectile.png')
+   this.load.image('player', 'assets/sprite/Archer/Archer_Idle_1.png'); // from https://superdark.itch.io/16x16-free-npc-pack
+   this.load.spritesheet('projectile', 'assets/sprite/arrow.png', { frameWidth: 32, frameHeight: 32, endFrame: 3 }); //from https://opengameart.org/content/rotating-arrow-projectile
    this.load.image('item', 'assets/js/item.png');
-   this.load.image('target', 'assets/js/target.png');
+   this.load.image('target', 'assets/sprite/target.png'); // from https://www.kenney.nl/assets/crosshair-pack under CC0
    this.load.image('troll', 'assets/js/rock.jpg');
 
+
+   // from https://superdark.itch.io/16x16-free-npc-pack
    this.load.path = 'assets/sprite/';
    this.load.image('playerIdle1', 'Archer/Archer_Idle_1.png');
    this.load.image('playerIdle2', 'Archer/Archer_Idle_2.png');
@@ -151,7 +152,7 @@ function preload() {
    this.load.image('playerWalk3', 'Archer/Archer_Walk_3.png');
    this.load.image('playerWalk4', 'Archer/Archer_Walk_4.png');
 
-   this.load.image("tiles", "../map/tileset.png");
+   this.load.image("tiles", "../map/tileset.png"); // tileset from https://elthen.itch.io/2d-pixel-art-dungeon-tileset
    this.load.tilemapTiledJSON("map", "../map/map.json");
 }
 
@@ -224,27 +225,33 @@ function create() {
    finder.setAcceptableTiles(acceptableTiles);
 
    this.anims.create({
-        key: 'playerIdle',
-        frames: [
-            { key: 'playerIdle1' },
-            { key: 'playerIdle2' },
-            { key: 'playerIdle3' },
-            { key: 'playerIdle4', duration: 50 }
-        ],
-        frameRate: 8,
-        repeat: -1
+      key: 'playerIdle',
+      frames: [
+         { key: 'playerIdle1' },
+         { key: 'playerIdle2' },
+         { key: 'playerIdle3' },
+         { key: 'playerIdle4', duration: 50 }
+      ],
+      frameRate: 8,
+      repeat: -1
    });
 
    this.anims.create({
-        key: 'playerMove',
-        frames: [
-            { key: 'playerWalk1' },
-            { key: 'playerWalk2' },
-            { key: 'playerWalk3' },
-            { key: 'playerWalk4', duration: 50 }
-        ],
-        frameRate: 8,
-        repeat: -1
+      key: 'playerMove',
+      frames: [
+         { key: 'playerWalk1' },
+         { key: 'playerWalk2' },
+         { key: 'playerWalk3' },
+         { key: 'playerWalk4', duration: 50 }
+      ],
+      frameRate: 8,
+      repeat: -1
+   });
+
+   this.anims.create({
+      key: 'arrow',
+      frames: this.anims.generateFrameNumbers('projectile', {start: 0, end: 3, first: 0 }),
+      framerate: 20
    });
 
    // Creating a player
@@ -283,6 +290,7 @@ function create() {
       var projectile = projectiles.get().setActive(true).setVisible(true);
       if (projectile) {
          projectile.fire(playerContainer, reticle);
+         projectile.anims.play('arrow');
          socket.emit("fire", id, reticle.x, reticle.y);
          this.physics.add.collider(this.spawns, projectile, enemyHitCallback);
       }
@@ -400,6 +408,7 @@ function path(enemy, self)
             console.warn("Path was not found.");
         } else {
             moveCharacter(enemy, path, self);
+            socket.emit("updateEnemies", enemies);
         }
     });
    finder.calculate();
