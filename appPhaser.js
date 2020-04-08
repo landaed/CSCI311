@@ -128,6 +128,15 @@ io.on('connection', function(socket){
      //console.log(Object.keys(players).length);
      //socket.emit("initPlayers", players);
    });
+   socket.on("updateEnemies", function(newEnemies){
+      for (var i = 0, len = enemies.length; i < len; i++) {
+         if (newEnemies[i] != null) // don't try to update if the client has not spawned this enemy
+         {
+            enemies[i].x = newEnemies[i].x;
+            enemies[i].y = newEnemies[i].y;
+         }
+      }
+   });
    socket.on("updateLoc", function(id,x,y){
     //console.log("id: " + id + ", size: " + Object.keys(players).length);
     //console.log("Updating location of ID: " + id);

@@ -105,7 +105,7 @@ var Projectile = new Phaser.Class({
       this.direction = Math.atan((target.x - this.x) / (target.y - this.y));
       //this.setRotation(this.direction);
 
-
+      this.anims.play('arrow');
       // Calculate X and y velocity of bullet to moves it from shooter to target
       if (target.y >= this.y) {
          this.xSpeed = this.speed * Math.sin(this.direction);
@@ -290,7 +290,6 @@ function create() {
       var projectile = projectiles.get().setActive(true).setVisible(true);
       if (projectile) {
          projectile.fire(playerContainer, reticle);
-         projectile.anims.play('arrow');
          socket.emit("fire", id, reticle.x, reticle.y);
          this.physics.add.collider(this.spawns, projectile, enemyHitCallback);
       }
@@ -392,6 +391,7 @@ function update() {
    reticle.body.velocity.x = playerContainer.body.velocity.x;
    reticle.body.velocity.y = playerContainer.body.velocity.y;
    constrainReticle(reticle);
+   socket.emit("updateEnemies", enemies);
 }
 
 function path(enemy, self)
@@ -408,7 +408,6 @@ function path(enemy, self)
             console.warn("Path was not found.");
         } else {
             moveCharacter(enemy, path, self);
-            socket.emit("updateEnemies", enemies);
         }
     });
    finder.calculate();
@@ -437,6 +436,8 @@ function enemyHitCallback(projectileHit, enemyHit)
    if (projectileHit.active === true && enemyHit.active === true)
    {
       enemyHit.health--;
+      enemyHit.setVelocityX = projectileHit.velocity;
+      enemyHit.setVelocityY = projectileHit.velocity;
       if (enemyHit.health <= 0)
       {
          enemyHit.setActive(false).setVisible(false).destroy;
@@ -529,7 +530,6 @@ function startGameOnConnect(p, self) {
 
    socket.on('fired', function(otherID, targetX, targetY) {
       if (otherID != id) {
-         //fake a shot from source to target direction
          var proj = projectiles.get().setActive(true).setVisible(true);
          var dest = {
             x: targetX,
@@ -580,13 +580,13 @@ function startGameOnConnect(p, self) {
 
    // update locations of enemies
    socket.on("recieveEnemies", function(newEnemies) {
-      self.spawns.children.each(function(enemy) {
-         if (enemies.length >= newEnemies.length)
-         {
+      if (enemies.length >= newEnemies.length) // don't update enemies until we're caught up with the server
+      {
+         self.spawns.children.each(function(enemy) {
             enemies[enemy.id].x = newEnemies[enemy.id].x;
             enemies[enemy.id].y = newEnemies[enemy.id].y;
-         }
-      }, this);
+         }, this);
+      }
    });
 
    socket.on("deletePlayer", function(pID) {
