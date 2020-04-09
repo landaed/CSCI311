@@ -1,6 +1,3 @@
-var myGamePiece;
-var wall;
-var myBackground;
 var player;
 var playerContainer;
 var speedMultiplyer = 3;
@@ -83,7 +80,6 @@ var client_id;
 var game = new Phaser.Game(config);
 
 // Projectile code based on example from https://phaser.io/examples/v3/view/games/topdownshooter/topdowncombatmechanics
-// projectiles
 var Projectile = new Phaser.Class({
 
    Extends: Phaser.GameObjects.Sprite,
@@ -104,7 +100,6 @@ var Projectile = new Phaser.Class({
    fire: function(shooter, target, angle) {
       this.setPosition(shooter.x, shooter.y); // Initial position
       this.direction = Math.atan((target.x - this.x) / (target.y - this.y));
-      //this.setRotation(this.direction);
 
       this.anims.play('arrow');
       // Calculate X and y velocity of bullet to moves it from shooter to target
@@ -572,7 +567,7 @@ function startGameOnConnect(p, self) {
          // Setup container for player and name
          // Note: player position is relative to container, so use container position for coordinates
          container = self.add.container(pServ.x, pServ.y, [players[key], otherPlayerText]);
-         container.setSize(12,46);
+         container.setSize(12, 46);
          self.playersGroup.add(container);
       }
 
@@ -582,15 +577,15 @@ function startGameOnConnect(p, self) {
    socket.emit("addPlayer", player.parentContainer.x, player.parentContainer.y, player.data.get('name'));
 
    socket.on("recieveWorld", function(p) {
-         obstacles = {};
-         //refill the array from the servers array
-         Object.keys(p).forEach((key, index) => {
-            let pServ = p[key];
-            locO = new component(pServ.width, pServ.height, pServ.color, pServ.x + xOffset, pServ.y + yOffset, pServ.type, pServ.id);
-            locO.worldPos.x = locO.x;
-            locO.worldPos.y = locO.y;
-            obstacles[pServ.id] = locO;
-         })
+      obstacles = {};
+      //refill the array from the servers array
+      Object.keys(p).forEach((key, index) => {
+         let pServ = p[key];
+         locO = new component(pServ.width, pServ.height, pServ.color, pServ.x + xOffset, pServ.y + yOffset, pServ.type, pServ.id);
+         locO.worldPos.x = locO.x;
+         locO.worldPos.y = locO.y;
+         obstacles[pServ.id] = locO;
+      })
    });
    socket.on("recievePlayers", function(p) {
       if (p.id != id) {
@@ -615,7 +610,7 @@ function startGameOnConnect(p, self) {
    socket.on("newPlayer", function(p) {
       if (p.id != id) {
          //store that component in a local list of players
-         players[p.id] = self.add.sprite(0, 0, 'player').setDisplaySize(64,64);
+         players[p.id] = self.add.sprite(0, 0, 'player').setDisplaySize(64, 64);
          players[p.id].setDataEnabled();
          players[p.id].data.set('id', p.id);
          players[p.id].data.set('health', p.health);
@@ -653,8 +648,7 @@ function startGameOnConnect(p, self) {
       {
          console.log("killing enemy " + enemyID);
          // stop pathing calcualations for the enemy
-         if (enemies[enemyID].interval != null)
-         {
+         if (enemies[enemyID].interval != null) {
             clearInterval(enemies[enemyID].interval);
          }
          enemies[enemyID].setActive(false).setVisible(false).destroy;
@@ -664,9 +658,8 @@ function startGameOnConnect(p, self) {
 
    // damage a player
    socket.on("hurtPlayer", function(playerHitID, damage) {
-      players[playerHitID].data.set("health", players[playerHitID].data.get('health')-damage);
-      if (players[playerHitID].data.get("health") <= 0)
-      {
+      players[playerHitID].data.set("health", players[playerHitID].data.get('health') - damage);
+      if (players[playerHitID].data.get("health") <= 0) {
          if (playerHitID == id) // we died
          {
             // game over
@@ -676,8 +669,7 @@ function startGameOnConnect(p, self) {
    });
 
    socket.on("target", function(enemyID, playerID) {
-      if(enemies[enemyID] != null)
-      {
+      if (enemies[enemyID] != null) {
          enemies[enemyID].hasTarget = true;
          enemies[enemyID].targetID = playerID;
       }
@@ -688,8 +680,7 @@ function startGameOnConnect(p, self) {
       if (enemies.length >= newEnemies.length) // don't update enemies until we're caught up with the server
       {
          self.spawns.children.each(function(enemy) {
-            if (enemies[enemy.id] != null && newEnemies[enemy.id] != null)
-            {
+            if (enemies[enemy.id] != null && newEnemies[enemy.id] != null) {
                enemies[enemy.id].x = newEnemies[enemy.id].x;
                enemies[enemy.id].y = newEnemies[enemy.id].y;
             }
@@ -701,10 +692,8 @@ function startGameOnConnect(p, self) {
       if (pID != id) {
          // update any enemies that were chasing that player
          for (var i = 0, len = enemies.length; i < len; i++) {
-            if (enemies[i] != null && enemies[i].hasTarget)
-            {
-               if (enemies[i].chasing)
-               {
+            if (enemies[i] != null && enemies[i].hasTarget) {
+               if (enemies[i].chasing) {
                   enemies[i].chasing = false;
                   clearInterval(enemies[i].interval)
                }
