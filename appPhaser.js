@@ -103,34 +103,62 @@ io.on('connection', function(socket){
        x: posX,
        y: posY,
        user: name,
+       health: 5,
        id: socket.id
     };
     //console.log("serverside player length: " + Object.keys(players).length + " Added ID: " + socket.id);
     //console.log("Player name was " + players[socket.id].user);
     // spawn enemies already on the server
     for (var i = 0, len = enemies.length; i < len; i++) {
-      socket.emit("spawnEnemy", enemies[i]);
+      if (enemies[i] != null)
+      {
+         console.log("spawning enemy " + i);
+         socket.emit("spawnEnemy", enemies[i]);
+      }
     }
 
     // spawn a new enemy for testing
-    enemies[enemyID] = {x:352,y:192,sprite:'troll',id:enemyID, health: 1, speed: 5, range:100}; // need a list of safe locations to spawn
+    enemies[enemyID] = new Enemy(352, 192, enemyID, 'enemy', 3, 5, 200); // need a list of safe locations to spawn
     io.sockets.emit("spawnEnemy", enemies[enemyID]);
-    console.log(enemies[enemyID]);
     enemyID++;
 
     io.sockets.emit("newPlayer", players[socket.id]);
 
    });
-   socket.on("fire", function (id, targetX, targetY){
-     io.sockets.emit("fired", id, targetX, targetY);
+   socket.on("fire", function (id, targetX, targetY, rotation){
+     io.sockets.emit("fired", id, targetX, targetY, rotation);
    });
    socket.on("getPlayers", function(){
      //console.log(Object.keys(players).length);
      //socket.emit("initPlayers", players);
    });
+   socket.on("hitPlayer", function(playerHit, hitID, health, damage){
+     players[hitID].health -= damage;
+     if (players[hitID].health <= 0)
+     {
+        //game over
+     }
+     io.sockets.emit("hurtPlayer", hitID, damage);
+   });
+   socket.on("hitEnemy", function(enemyID, damage){
+     if (enemies[enemyID] != null)
+     {
+        enemies[enemyID].health -= damage;
+        if (enemies[enemyID].health <= 0)
+        {
+           console.log("Killing enemy " + enemyID);
+           enemies[enemyID].destroy;
+           enemies[enemyID] = null;
+        }
+        io.sockets.emit("hurtEnemy", enemyID, damage);
+     }
+   });
    socket.on("updateEnemies", function(newEnemies){
       for (var i = 0, len = enemies.length; i < len; i++) {
-         if (newEnemies[i] != null) // don't try to update if the client has not spawned this enemy
+         // don't try to update if the client has not spawned this enemy
+         // or the enemy is dead
+
+         if (newEnemies[i] != null && enemies[i] != null && !newEnemies[i].noUpdate)
          {
             enemies[i].x = newEnemies[i].x;
             enemies[i].y = newEnemies[i].y;
@@ -140,17 +168,59 @@ io.on('connection', function(socket){
    socket.on("updateLoc", function(id,x,y){
     //console.log("id: " + id + ", size: " + Object.keys(players).length);
     //console.log("Updating location of ID: " + id);
-    players[socket.id].x = x;
-    players[socket.id].y = y;
+    players[id].x = x;
+    players[id].y = y;
     //console.log("servX: " + players[id].x + ", servY: " + players[id].y);
     io.sockets.emit("recievePlayers", players[id]);
    });
 });
 // update enemy locations at static interval
 setInterval(() => {
-   if (enemies[0] != null)
+   if (enemies.length != 0)
+   {
       io.sockets.emit("recieveEnemies", enemies);
+      targetCheck();
+   }
 }, 100, enemies);
+
+// check if any players are in range to be targeted by an enemy
+// pathing happens clientside for simplicity
+function targetCheck()
+{
+   for (var i = 0, len = enemies.length; i < len; i++)
+	{
+      if(enemies[i] != null && !enemies[i].hasTarget)// only check for living enemies that need a target
+      {
+         for(var id in players)// target the first player in range
+			{
+            // get distance
+            var dist = (Math.sqrt(Math.pow((players[id].x - enemies[i].x),2)
+                                + Math.pow((players[id].y - enemies[i].y),2)));
+
+            if (dist <= enemies[i].range)
+            {
+               //console.log(enemies[i].hasTarget);
+               enemies[i].targetID = id;
+               enemies[i].hasTarget = true;
+               io.sockets.emit("target", enemies[i].id, id);
+            }
+         }
+      }
+   }
+}
+
+function Enemy(x, y, id, sprite, health, speed, range) {
+   this.x = x;
+   this.y = y;
+   this.sprite = sprite;
+   this.id = id;
+   this.health = health;
+   this.speed = speed;
+   this.range = range;
+   this.hasTarget = false;
+   this.chasing = false;
+   this.interval = null;
+}
 
 function obj(width, height, color, x, y, type, id) {
   this.type = type;
