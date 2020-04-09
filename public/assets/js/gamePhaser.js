@@ -133,17 +133,14 @@ var Projectile = new Phaser.Class({
 });
 
 function preload() {
-   this.load.image('ground', 'assets/js/ground.jpg');
-   this.load.image("wall", "assets/js/wall.png");
-   this.load.image('player', 'assets/sprite/Archer/Archer_Idle_1.png'); // from https://superdark.itch.io/16x16-free-npc-pack
-   this.load.image('item', 'assets/js/item.png');
-   this.load.image('target', 'assets/sprite/target.png'); // from https://www.kenney.nl/assets/crosshair-pack under CC0
-   this.load.spritesheet('enemy', 'assets/sprite/enemy.png', { frameWidth: 64, frameHeight: 64, endFrame: 24 }); //by @LazyHamsters from https://lhteam.itch.io/zombie-toast
-   this.load.spritesheet('projectile', 'assets/sprite/arrow.png', { frameWidth: 32, frameHeight: 32, endFrame: 3 }); //from https://opengameart.org/content/rotating-arrow-projectile
-
+   this.load.path = 'assets/sprite/';
+   this.load.image('player', 'Archer/Archer_Idle_1.png'); // from https://superdark.itch.io/16x16-free-npc-pack
+   this.load.image('item', 'item.png');
+   this.load.image('target', 'target.png'); // from https://www.kenney.nl/assets/crosshair-pack under CC0
+   this.load.spritesheet('enemy', 'enemy.png', { frameWidth: 64, frameHeight: 64, endFrame: 24 }); //by @LazyHamsters from https://lhteam.itch.io/zombie-toast
+   this.load.spritesheet('projectile', 'arrow.png', { frameWidth: 32, frameHeight: 32, endFrame: 3 }); //from https://opengameart.org/content/rotating-arrow-projectile
 
    // from https://superdark.itch.io/16x16-free-npc-pack
-   this.load.path = 'assets/sprite/';
    this.load.image('playerIdle1', 'Archer/Archer_Idle_1.png');
    this.load.image('playerIdle2', 'Archer/Archer_Idle_2.png');
    this.load.image('playerIdle3', 'Archer/Archer_Idle_3.png');
