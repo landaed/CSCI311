@@ -13,6 +13,6 @@ class Enemy extends Phaser.GameObjects.Sprite {
       this.targetID = -1;
       this.chasing = false;
       this.interval = null;
-      this.noUpdate = false; // bad, hacky way of making enemy tweening a little smoother
+      this.noUpdate = false; // bad, hacky way of making enemy tweening a little smoother over the network
    }
 }

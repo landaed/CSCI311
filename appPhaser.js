@@ -22,6 +22,7 @@ var worldWidth = 800;
 var worldHeight = 600;
 var enemyID = 0;
 var map = [];
+var living = 0;
 // setup mongo connection
 const uri = process.env.MONGO_CONNECTION_URL;
 mongoose.connect(uri, { useNewUrlParser : true, useCreateIndex: true, useUnifiedTopology: true});
@@ -117,11 +118,6 @@ io.on('connection', function(socket){
       }
     }
 
-    // spawn a new enemy for testing
-    enemies[enemyID] = new Enemy(352, 192, enemyID, 'enemy', 3, 5, 200); // need a list of safe locations to spawn
-    io.sockets.emit("spawnEnemy", enemies[enemyID]);
-    enemyID++;
-
     io.sockets.emit("newPlayer", players[socket.id]);
 
    });
@@ -149,6 +145,7 @@ io.on('connection', function(socket){
            console.log("Killing enemy " + enemyID);
            enemies[enemyID].destroy;
            enemies[enemyID] = null;
+           living--;
         }
         io.sockets.emit("hurtEnemy", enemyID, damage);
      }
@@ -157,7 +154,6 @@ io.on('connection', function(socket){
       for (var i = 0, len = enemies.length; i < len; i++) {
          // don't try to update if the client has not spawned this enemy
          // or the enemy is dead
-
          if (newEnemies[i] != null && enemies[i] != null && !newEnemies[i].noUpdate)
          {
             enemies[i].x = newEnemies[i].x;
@@ -183,8 +179,19 @@ setInterval(() => {
    }
 }, 100, enemies);
 
+// spawn a new enemy every 2 seconds if there are less than 5
+setInterval(() => {
+   if (living < 5)
+   {
+      enemies[enemyID] = new Enemy(Math.floor(Math.random()*370)+352, 50, enemyID, 'enemy', 3, 5, 200); // need a list of safe locations to spawn
+      io.sockets.emit("spawnEnemy", enemies[enemyID]);
+      enemyID++;
+      living++;
+   }
+}, 2000, enemies)
+
 // check if any players are in range to be targeted by an enemy
-// pathing happens clientside for simplicity
+// pathing happens clientside (probably a bad idea)
 function targetCheck()
 {
    for (var i = 0, len = enemies.length; i < len; i++)

@@ -187,6 +187,9 @@ function create() {
    const floorDetailLayer = map.createStaticLayer("FloorDetail", tileset, 0, 0);
    const wallsLayer = map.createStaticLayer("Walls", tileset, 0, 0);
    const obstaclesLayer = map.createStaticLayer("Obstacles", tileset, 0, 0);
+   const aboveLayer = map.createStaticLayer("Above",tileset,0, 0);
+   const playerSpawn = map.findObject("SpawnPoints", obj => obj.name === "PlayerSpawn");
+   aboveLayer.setDepth(10);
    wallsLayer.setCollisionByProperty({collide:true});
    obstaclesLayer.setCollisionByProperty({collide:true});
 
@@ -252,18 +255,9 @@ function create() {
    });
 
    this.anims.create({
-      key: 'enemyLeft',
+      key: 'enemyChase',
       frames: this.anims.generateFrameNumbers('enemy', {start: 2, end: 5, first: 2 }),
       repeat: -1,
-      duration: 400,
-      framerate: 20
-   });
-
-   this.anims.create({
-      key: 'enemyRight',
-      frames: this.anims.generateFrameNumbers('enemy', {start: 2, end: 5, first: 2 }),
-      repeat: -1,
-      flipX: true,
       duration: 400,
       framerate: 20
    });
@@ -292,7 +286,7 @@ function create() {
 
    player.data.set('health', 5);
 
-   reticle = this.physics.add.sprite(800, 700, 'target');
+   reticle = this.physics.add.sprite(800, 600, 'target');
    reticle.setOrigin(0.5, 0.5).setDisplaySize(25, 25).setCollideWorldBounds(true);
 
    // Creating our projectiles
@@ -336,7 +330,7 @@ function create() {
    }, this);
    // Setup container for player and name
    // Note: player position is relative to container, so use container position for coordinates
-   playerContainer = this.add.container(400, 300, [player, nameText]);
+   playerContainer = this.add.container(playerSpawn.x, playerSpawn.y, [player, nameText]);
    playerContainer.setSize(12,46);
    this.physics.world.enable(playerContainer);
    playerContainer.body.setBounce(0.2).setCollideWorldBounds(true);
@@ -468,14 +462,7 @@ function update() {
       }
       else if (enemies[i] != null && enemies[i].chasing)
       {
-         if (enemies[i].x < players[enemies[i].targetID].x)
-         {
-            enemies[i].anims.play('enemyRight', true);
-         }
-         else
-         {
-            enemies[i].anims.play('enemyRight', true);
-         }
+         enemies[i].anims.play('enemyChase', true);
       }
    }
    if(enemies)
@@ -588,6 +575,7 @@ function startGameOnConnect(p, self) {
          // Setup container for player and name
          // Note: player position is relative to container, so use container position for coordinates
          container = self.add.container(pServ.x, pServ.y, [players[key], otherPlayerText]);
+         container.setSize(12,46);
          self.playersGroup.add(container);
       }
 
