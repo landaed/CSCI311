@@ -30,8 +30,15 @@
             <li class="nav-item active">
                <a class="nav-link" href="#">About Us</a>
             </li>
+            <li class="nav-item">
+               <a class="nav-link" href="characterInfo.html">Character Profile</a>
+            </li>
          </ul>
-         <button id="myBtn" class="btn btn-primary" onclick="showModal()">Login/Signup</button>
+         <li class="nav-item active">
+           <a class="nav-link" id="username">name <span class="sr-only">(current)</span></a>
+         </li>
+
+         <button id="myBtn" class="btn btn-primary" onclick="logout()">Logout</button>
       </div>
    </nav>
 
@@ -97,18 +104,38 @@
       </div>
 
     </div>
-  <script>
-  $.ajax({
-    type: 'GET',
-    url: '/index',
-    success: function (data) {
-      window.location.replace('/about_us0.html');
-    },
-    error: function (xhr) {
-      console.log("bad");
+    <script>
+    function getCookie(cname) {
+      var name = cname + "=";
+      var decodedCookie = decodeURIComponent(document.cookie);
+      var ca = decodedCookie.split(';');
+      for(var i = 0; i <ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+          c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+          return c.substring(name.length, c.length);
+        }
+      }
+      return "";
     }
-  });
-  </script>
+    var username = document.getElementById("username");
+    username.innerHTML = getCookie("username");
+    function logout() {
+      $.ajax({
+        type: 'POST',
+        url: '/logout',
+        success: function (data) {
+          window.location.replace('/index.html');
+        },
+        error: function (xhr) {
+          window.alert("could not logout");
+          window.location.replace('/user.html');
+        }
+      });
+    }
+    </script>
   <script src="assets/js/indexScript.js"></script>
   <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>

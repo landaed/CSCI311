@@ -32,6 +32,9 @@
                <a class="nav-link" href="#">Character Profile</a>
             </li>
          </ul>
+         <li class="nav-item active">
+           <a class="nav-link" id="username">name <span class="sr-only">(current)</span></a>
+         </li>
          <button id="myBtn" class="btn btn-primary" onclick="showModal()">Login/Signup</button>
       </div>
    </nav>
@@ -84,6 +87,8 @@
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 
     <script>
+    var username = document.getElementById("username");
+    username.innerHTML = getCookie("username");
     function getCookie(cname) {
       var name = cname + "=";
       var decodedCookie = decodeURIComponent(document.cookie);
