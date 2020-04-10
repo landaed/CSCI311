@@ -189,6 +189,12 @@ h1{
   -webkit-user-select: none;
 }
 
+.infoImg {
+   width:192px;
+   height:220px;
+   object-fit: cover;
+}
+
 /* Position the "next button" to the right */
 .next {
   right: 0;

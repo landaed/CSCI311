@@ -190,8 +190,9 @@ function create() {
         children[i].setPosition(x, y);
         children[i].name = "potion of truth";
         children[i].type = "potion";
-        children[i].image = 'assets/js/item.png';
+        children[i].image = 'assets/sprite/item.png';
     }
+    itemGroup.refresh();
 
    map = this.make.tilemap({key:"map"});
    const tileset = map.addTilesetImage("ProjTileset", "tiles");
@@ -371,31 +372,7 @@ function create() {
       players[id].data.set('id', id);
       startGameOnConnect(p, self);
    });
-  this.physics.add.overlap(player, itemGroup, pickup);
-
-
-
-   itemGroup = this.physics.add.staticGroup({
-        key: 'item',
-        frameQuantity: 10,
-        immovable: true,
-        width: 0.1,
-        height: 0.1,
-        name: 'awesome potion',
-        type: 'potion'
-   });
-   var children = itemGroup.getChildren();
-
-   for (var i = 0; i < children.length; i++)
-   {
-        var x = Phaser.Math.Between(50, 750);
-        var y = Phaser.Math.Between(50, 550);
-        children[i].setScale(.1);
-        children[i].setPosition(x, y);
-   }
-
-   itemGroup.refresh();
-   this.physics.add.overlap(player, itemGroup, pickup);
+  this.physics.add.overlap(playerContainer, itemGroup, pickup);
 
 }
 
