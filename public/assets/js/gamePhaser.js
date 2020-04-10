@@ -170,7 +170,6 @@ function create() {
    // Creating a repeating background sprite
    const bg = this.add.tileSprite(0, 0, width, height, "ground");
    bg.setOrigin(0, 0);
-
    // Creating obstacles
    obstacles = this.physics.add.staticGroup();
    obstacles.create(600, 400, 'wall').setScale(0.15).refreshBody();
@@ -397,6 +396,7 @@ function create() {
 
    itemGroup.refresh();
    this.physics.add.overlap(player, itemGroup, pickup);
+
 }
 
 function pickup(player, item){
