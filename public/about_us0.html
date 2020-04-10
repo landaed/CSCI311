@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+   <meta charset="utf-8">
+   <title>About Us</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
     integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <link href="assets/css/main.css" rel="stylesheet">
@@ -16,6 +18,7 @@
          <img src="./assets/sprite/icon.png" alt="Smiley face" height="44" width="44">
          Toast Tomb
       </a>
+      <a class="text-primary" id="username">name </a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
          <span class="navbar-toggler-icon"></span>
       </button>
@@ -34,19 +37,15 @@
                <a class="nav-link" href="characterInfo.html">Character Profile</a>
             </li>
          </ul>
-         <li class="nav-item active">
-           <a class="nav-link" id="username">name <span class="sr-only">(current)</span></a>
-         </li>
-
          <button id="myBtn" class="btn btn-primary" onclick="logout()">Logout</button>
       </div>
    </nav>
 
-    <main role="main">
+    <main>
       <div class="jumbotron bg-dark">
         <div class="container">
-          <h2 class="display-4">About Us</h2>
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas pretium felis sed metus lacinia blandit.
+          <h2 class="display-4 text-info">About Us</h2>
+          <p class="text-info">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas pretium felis sed metus lacinia blandit.
             Nam scelerisque sollicitudin ex in ornare. Class aptent taciti sociosqu ad litora torquent per conubia
             nostra, per inceptos himenaeos. Phasellus vitae ornare augue. Nunc feugiat, enim vel sollicitudin
             scelerisque, justo elit cursus odio, vel dictum turpis nisl dictum massa. Nunc libero tellus, varius sed

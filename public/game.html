@@ -2,7 +2,8 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <link href="assets/css/game.css" rel="stylesheet">
     <link href="assets/css/main.css" rel="stylesheet">
@@ -16,6 +17,7 @@
          <img src="./assets/sprite/icon.png" alt="Smiley face" height="44" width="44">
          Toast Tomb
       </a>
+      <a class="text-primary" id="username">name </a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
          <span class="navbar-toggler-icon"></span>
       </button>
@@ -41,7 +43,7 @@
       </div>
    </nav>
 <div class="d-flex flex-column">
-   <main id="game" class="p-1" role="main">
+   <main id="game" class="p-1">
    </main>
 
    <h2>Controls</h2>
@@ -85,15 +87,15 @@ function logout() {
 }
 </script>
 <script src="assets/js/indexScript.js"></script>
-<script src="http://23.16.28.44:3000/socket.io/socket.io.js"></script>
-<script type="text/javascript" src="assets/js/classes.js"></script>
-<script type="text/javascript" src="assets/js/phaser.js"></script>
-<script type="text/javascript" src="assets/js/enemy.js"></script>
-<script type "text/javascrpt" src="assets/js/easystar.min.js"></script> <!--https://github.com/prettymuchbryce/easystarjs-->
+<script src="http://localhost:3000/socket.io/socket.io.js"></script>
+<script src="assets/js/classes.js"></script>
+<script src="assets/js/phaser.js"></script>
+<script src="assets/js/enemy.js"></script>
+<script src="assets/js/easystar.min.js"></script> <!--https://github.com/prettymuchbryce/easystarjs-->
 <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
-<script type="text/javascript" src="assets/js/gamePhaser.js"></script>
+<script src="assets/js/gamePhaser.js"></script>
 
 </body>
 
