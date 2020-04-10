@@ -2,6 +2,7 @@
 "node appPhaser.js" to start the server locally.
 "localhost:3000" in browser to visit the site locally.
 
+There will be a dedicated server as well, we will email you the address to it ASAP
 ===========Structure===============
 auth - handles authentication using passport and JWT
 models - db models for the website
