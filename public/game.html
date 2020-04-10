@@ -36,7 +36,10 @@
                <a class="nav-link" href="characterInfo.html">Character Profile</a>
             </li>
          </ul>
-         <button id="myBtn" class="btn btn-primary" onclick="showModal()">Login/Signup</button>
+         <li class="nav-item active">
+           <a class="nav-link" id="username">name <span class="sr-only">(current)</span></a>
+         </li>
+         <button id="myBtn" class="btn btn-primary" onclick="logout()">Logout</button>
       </div>
    </nav>
 <div class="d-flex flex-column">
@@ -51,6 +54,38 @@
       Left Click to shoot
    </p>
 </div>
+<script>
+function getCookie(cname) {
+  var name = cname + "=";
+  var decodedCookie = decodeURIComponent(document.cookie);
+  var ca = decodedCookie.split(';');
+  for(var i = 0; i <ca.length; i++) {
+    var c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return "";
+}
+var username = document.getElementById("username");
+username.innerHTML = getCookie("username");
+function logout() {
+  $.ajax({
+    type: 'POST',
+    url: '/logout',
+    success: function (data) {
+      window.location.replace('/index.html');
+    },
+    error: function (xhr) {
+      window.alert("could not logout");
+      window.location.replace('/user.html');
+    }
+  });
+}
+</script>
 <script src="assets/js/indexScript.js"></script>
 <script src="http://localhost:3000/socket.io/socket.io.js"></script>
 <script src="assets/js/classes.js"></script>
