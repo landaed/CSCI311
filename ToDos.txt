@@ -1,9 +1,9 @@
 ===========Known Issues============
 - Should move pathfinding to server to fix the following issues
-    - Enemies stop when their target disconnects and do not find another target. 
+    - Enemies stop when their target disconnects and do not find another target.
     - Enemies may appear jittery to players other than their target.
-- Rejoining/refreshing the game page can cause errors populating players. 
-- 
+- Rejoining/refreshing the game page can cause errors populating players.
+- Need to fix security issue: remove semi-sensitive data from cookie and properly decrypt it from the session cookie.
 ==============Plans================
 - Move all pathing to server. May have to use CSV for map layers instead of JSON but should otherwise be straightforward with some refactoring.
 - Add ability to move to a different floor. Can be done using multiple scenes in Phaser. Will require

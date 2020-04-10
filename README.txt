@@ -3,17 +3,16 @@
 "localhost:3000" in browser to visit the site locally.
 
 ===========Structure===============
-auth - 
-middleware -
-models - 
-node_modules - 
+auth - handles authentication using passport and JWT
+models - db models for the website
+node_modules - node packages used for the website
 public - HTML files
     assets - site assets
         css - CSS files
         js - Javascript scripts and libraries
         map - Tileset and map files for the game
         sprite - images for sprites in game
-    routes - 
+    routes - handles the posts and gets for the website
 ===========Requirements============
 - Easystar v0.4.3(https://easystarjs.com/)
 - Phaser 3 v3.22.0 (https://github.com/photonstorm/phaser/releases/tag/v3.22.0)
@@ -35,5 +34,5 @@ public - HTML files
     "passport-local": "^1.0.0",
     "socket.io": "^2.3.0"
 ===========Stretch Goals===========
-Phaser - Accelerated development of most game features. 
+Phaser - Accelerated development of most game features.
 Node - Allowed us to implement additional features for the site and game.
