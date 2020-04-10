@@ -38,7 +38,10 @@
           <h1 class="page-header">Project Title</h1>
         </ul>
       </div>
-      <button id="myBtn" class="btn btn-primary" onclick="showModal()">Login/Signup</button>
+      <li class="nav-item active">
+        <a class="nav-link" id="username">name <span class="sr-only">(current)</span></a>
+      </li>
+      <button id="myBtn" class="btn btn-primary" onclick="logout()">Logout</button>
     </nav>
     <div class="jumbotron bg-dark text-white">
       <div class="row">
@@ -79,7 +82,7 @@
             <input type="email" id="email" class="form-control" placeholder="Email address" required autofocus>
             <label for="password" class="sr-only">Password</label>
             <input type="passw   ord" id="password" class="form-control" placeholder="Password" required>
-            <a class="btn btn-lg btn-primary btn-block" onClick="signIn()">Sign in</a>
+            <a class="btn btn-lg btn-primary btn-block" onClick="playGame()">Sign in</a>
             <a href="signup.html">Don't have an account? Sign up here.</a>
           </form>
         </div>
@@ -90,32 +93,37 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    //var socket = io.connect('http://localhost');
-    $.ajax({
-      type: 'GET',
-      url: '/index',
-      success: function (data) {
-        window.location.replace('/user.html');
-      },
-      error: function (xhr) {
-        console.log("bad");
+    function getCookie(cname) {
+      var name = cname + "=";
+      var decodedCookie = decodeURIComponent(document.cookie);
+      var ca = decodedCookie.split(';');
+      for(var i = 0; i <ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+          c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+          return c.substring(name.length, c.length);
+        }
       }
-    });
-    function signIn() {
-      var data = {
-        email: document.forms[0].elements[0].value,
-        password: document.forms[0].elements[1].value
-      };
+      return "";
+    }
+    var username = document.getElementById("username");
+    username.innerHTML = getCookie("username");
+    //var socket = io.connect('http://localhost');
+    function playGame(){
+        window.location.replace('/game.html');
+    }
+    function logout() {
       $.ajax({
         type: 'POST',
-        url: '/login',
-        data,
+        url: '/logout',
         success: function (data) {
           window.location.replace('/index.html');
         },
         error: function (xhr) {
-          window.alert(JSON.stringify(xhr));
-          window.location.replace('/index.html');
+          window.alert("could not logout");
+          window.location.replace('/user.html');
         }
       });
     }

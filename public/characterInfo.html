@@ -43,64 +43,15 @@
             <div class="bg-dark">
                 <div class="container">
                     <table class="table table-dark">
-                        <thead>
+                        <thead class="inventory">
                             <tr>
                                 <th scope="col"></th>
                                 <th scope="col">Name</th>
-                                <th scope="col">Weapon</th>
-                                <th scope="col">Health</th>
-                                <th scope="col">Attack</th>
+                                <th scope="col">Type</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <th scope="row"><img src="./assets/js/genie.gif"
-                                        style="width:130px;height:120px;object-fit: cover;"></th>
-                                <td>Genie</td>
-                                <td>Sword, Shield</td>
-                                <td>
-                                    <div
-                                        style="width:120px;height:10px;border:1px solid;background:red;position:relative;top:5px">
-                                    </div>
-                                </td>
-                                <td>
-                                    <div
-                                        style="width:120px;height:10px;border:1px solid;background:blue;position:relative;top:5px">
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row"><img src="./assets/js/knight.gif"
-                                        style="width:130px;height:120px;object-fit: cover;"></th>
-                                <td>Knight</td>
-                                <td>Sword, Shield</td>
-                                <td>
-                                    <div
-                                        style="width:120px;height:10px;border:1px solid;background:red;position:relative;top:5px">
-                                    </div>
-                                </td>
-                                <td>
-                                    <div
-                                        style="width:150px;height:10px;border:1px solid;background:blue;position:relative;top:5px">
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row"><img src="./assets/js/smith.gif"
-                                        style="width:130px;height:120px;object-fit: cover;"></th>
-                                <td>Smith</td>
-                                <td>Sword, Hammer</td>
-                                <td>
-                                    <div
-                                        style="width:140px;height:10px;border:1px solid;background:red;position:relative;top:5px">
-                                    </div>
-                                </td>
-                                <td>
-                                    <div
-                                        style="width:140px;height:10px;border:1px solid;background:blue;position:relative;top:5px">
-                                    </div>
-                                </td>
-                            </tr>
+                        <tbody class="inventory" id="inventory">
+
                         </tbody>
                     </table>
 
@@ -134,6 +85,51 @@
     </div>
 
     <script src="assets/js/indexScript.js"></script>
+    <script>
+    function getCookie(cname) {
+      var name = cname + "=";
+      var decodedCookie = decodeURIComponent(document.cookie);
+      var ca = decodedCookie.split(';');
+      for(var i = 0; i <ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+          c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+          return c.substring(name.length, c.length);
+        }
+      }
+      return "";
+    };
+    var x = getCookie("_id").split(':');
+    x = x[1];
+    var result = x.substring(1, x.length-1);
+    x.slice(1,-1);
+    console.log(x);
+    var data = {
+      id: x,
+    };
+    $.ajax({
+      type: 'POST',
+      url: '/getInventory',
+      data,
+      success: function (data) {
+        console.log(data);
+        data.items.forEach((item, i) => {
+          var myHtmlContent = '<th scope="row"><img src="'+ item.image + '" style="width:130px;height:120px;object-fit: cover;"></th> <td>' + item.name + '</td> <td>'+ item.type+'</td>';
+          var tableRef = document.getElementById('inventory');
+
+          var newRow = tableRef.insertRow(tableRef.rows.length);
+          newRow.innerHTML = myHtmlContent;
+        });
+
+      },
+      error: function (xhr) {
+        console.log("no Inventory" + JSON.stringify(xhr));
+      }
+    });
+
+
     </script>
 </body>
 

@@ -104,10 +104,16 @@ require('./auth/auth');
 app.get('/game.html', passport.authenticate('jwt', { session : false }), function (req, res) {
   res.sendFile(__dirname + '/public/game.html');
 });
+
+app.get('/user.html', passport.authenticate('jwt', { session : false }), function (req, res) {
+  res.sendFile(__dirname + '/public/user.html');
+});
 app.use(express.static(__dirname + '/public'));
 
 app.get('/', function (req, res) {
+  console.log("meow");
  res.sendFile(__dirname + '/index.html');
+
 });
 
 app.get('/changeLog', function (req, res) {

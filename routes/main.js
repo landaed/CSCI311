@@ -14,9 +14,12 @@ const createItem = function(userID, item) {
   return db.create(
         {name: item.name,
         type: item.type,
+        image: item.image,
         id: mongoose.Types.ObjectId(userID)}
   );
 };
+
+
 
 router.get('/status', (req, res, next) => {
   res.status(200).json({ status: 'ok' });
@@ -93,14 +96,13 @@ router.post('/token', (req, res) => {
 
 router.post('/item', (req, res) => {
   console.log("item end point reached");
-  const {id, name, type} = req.body;
-  console.log("user id for item:" + id);
-  console.log("user name for item:" + name);
-  console.log("user type for item:" + type);
+  console.log(req.body);
+  const {id, name, type, image} = req.body;
   const run = async function() {
     item = await createItem(id,{
       name: name,
-      type: type
+      type: type,
+      image: image
     });
     console.log("\n>> item:\n", req.body);
   };

@@ -5,6 +5,7 @@ const Item = mongoose.model(
   new mongoose.Schema({
     name: String,
     type: String,
+    image: String,
     id: mongoose.ObjectId
   })
 );

@@ -165,8 +165,6 @@ function create() {
         immovable: true,
         width: 0.1,
         height: 0.1,
-        name: 'awesome potion',
-        type: 'potion'
     });
     var children = itemGroup.getChildren();
 
@@ -176,6 +174,9 @@ function create() {
         var y = Phaser.Math.Between(50, 550);
         children[i].setScale(.1);
         children[i].setPosition(x, y);
+        children[i].name = "potion of truth";
+        children[i].type = "potion";
+        children[i].image = 'assets/js/item.png';
     }
 
     itemGroup.refresh();
@@ -249,14 +250,17 @@ function create() {
       id = socket.id;
       players[id] = player;
       startGameOnConnect(p, self);
-   })
+   });
+  this.physics.add.overlap(player, itemGroup, pickup);
 
-   this.physics.add.overlap(player, itemGroup, pickup);
+
 }
 
 function pickup(player, item){
   //add item to db
-    getItem("potion of truth", "potion");
+    console.log("img b4: " + item.image);
+    console.log("ITEM: " + item);
+    getItem(item.name, item.type, item.image);
   //  Hide the sprite
     itemGroup.killAndHide(item);
 
@@ -428,12 +432,14 @@ function resetProjectile(projectile) {
 
 
 
-function getItem(name, type) {
+function getItem(name, type, image) {
   console.log(client_id);
+  console.log("img after: " + image);
   var data = {
     id: client_id,
     name: name,
-    type: type
+    type: type,
+    image: image
   };
   $.ajax({
     type: 'POST',
