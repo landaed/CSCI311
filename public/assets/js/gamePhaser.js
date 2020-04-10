@@ -666,7 +666,7 @@ function startGameOnConnect(p, self) {
          {
             // game over
          }
-         playerHit.setActive(false).setVisible(false).destroy;
+         players[playerHitID].setActive(false).setVisible(false).destroy;
       }
    });
 
